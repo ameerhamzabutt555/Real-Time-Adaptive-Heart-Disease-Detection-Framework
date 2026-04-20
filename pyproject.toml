@@ -4,7 +4,17 @@ version = "0.1.0"
 description = "Adaptive and real-time heart disease detection framework"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "numpy",
+    "pandas",
+    "scikit-learn",
+    "river",
+    "joblib",
+    "fastapi",
+    "pydantic",
+    "uvicorn[standard]",
+    "streamlit",
+]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

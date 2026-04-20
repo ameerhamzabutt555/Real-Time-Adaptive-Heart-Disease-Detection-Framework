@@ -59,4 +59,7 @@ This repository follows a research-to-production layout so the same codebase can
 make help
 make run-api
 make run-dashboard
+make run-pipeline INPUT=data/raw/heart.csv DATA=data/processed/heart_processed.csv
+make train-baseline DATA=data/processed/heart_processed.csv
+make run-adaptive DATA=data/processed/heart_processed.csv
 ```
