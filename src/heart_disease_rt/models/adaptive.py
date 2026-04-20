@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from dataclasses import dataclass
 from pathlib import Path
 
 import pandas as pd
@@ -13,15 +12,6 @@ from heart_disease_rt.data.schema import FEATURE_COLUMNS, LABEL_COLUMN
 from heart_disease_rt.monitoring.reporting import save_adaptive_report_plots, summarize_comparison
 
 SUPPORTED_DETECTORS = ("adwin", "ddm", "page_hinkley")
-
-
-@dataclass
-class AdaptiveRunSummary:
-    detector: str
-    steps: int
-    accuracy: float
-    f1: float
-    drift_events: int
 
 
 def _iter_records(df: pd.DataFrame) -> Iterable[tuple[dict[str, float], int]]:
@@ -45,7 +35,7 @@ def _build_detector(detector_name: str):
 def run_adaptive_training(
     df: pd.DataFrame,
     detector_name: str = "adwin",
-) -> tuple[AdaptiveRunSummary, pd.DataFrame]:
+) -> tuple[dict[str, float | int | str], pd.DataFrame]:
     """Run prequential online training with selected drift detector."""
     model = compose.Pipeline(
         preprocessing.StandardScaler(),
@@ -84,36 +74,23 @@ def run_adaptive_training(
         )
         model.learn_one(x, y)
 
-    summary = AdaptiveRunSummary(
-        detector=detector_name,
-        steps=len(progress_rows),
-        accuracy=float(metric_acc.get()),
-        f1=float(metric_f1.get()),
-        drift_events=drift_events,
-    )
+    summary: dict[str, float | int | str] = {
+        "detector": detector_name,
+        "steps": len(progress_rows),
+        "accuracy": float(metric_acc.get()),
+        "f1": float(metric_f1.get()),
+        "drift_events": drift_events,
+    }
     return summary, pd.DataFrame(progress_rows)
 
 
 def run_adaptive_experiment(
     frame: pd.DataFrame,
     detector_name: str = "adwin",
-) -> AdaptiveRunSummary:
+) -> dict[str, float | int | str]:
     """Backwards-compatible helper returning only headline summary."""
     summary, _ = run_adaptive_training(frame, detector_name=detector_name)
     return summary
-
-
-def run_adaptive_detector_comparison(
-    frame: pd.DataFrame,
-    detector_names: list[str] | None = None,
-) -> dict[str, AdaptiveRunSummary]:
-    """Run adaptive loop for multiple detectors and return summary map."""
-    selected = detector_names or list(SUPPORTED_DETECTORS)
-    results: dict[str, AdaptiveRunSummary] = {}
-    for detector_name in selected:
-        summary, _ = run_adaptive_training(frame, detector_name=detector_name)
-        results[detector_name] = summary
-    return results
 
 
 def compare_drift_detectors(
@@ -129,11 +106,11 @@ def compare_drift_detectors(
         summary, progress = run_adaptive_training(frame, detector_name=detector_name)
         summaries.append(
             {
-                "detector": summary.detector,
-                "steps": summary.steps,
-                "accuracy": summary.accuracy,
-                "f1": summary.f1,
-                "drift_events": summary.drift_events,
+                "detector": summary["detector"],
+                "steps": summary["steps"],
+                "accuracy": summary["accuracy"],
+                "f1": summary["f1"],
+                "drift_events": summary["drift_events"],
             }
         )
         all_progress.append(progress)
@@ -158,11 +135,11 @@ def run_adaptive_comparison(
         summary, progress = run_adaptive_training(frame, detector_name=detector_name)
         summaries.append(
             {
-                "detector": summary.detector,
-                "steps": summary.steps,
-                "accuracy": summary.accuracy,
-                "f1": summary.f1,
-                "drift_events": summary.drift_events,
+                "detector": summary["detector"],
+                "steps": summary["steps"],
+                "accuracy": summary["accuracy"],
+                "f1": summary["f1"],
+                "drift_events": summary["drift_events"],
             }
         )
         all_progress.append(progress)
@@ -190,7 +167,7 @@ def run_adaptive_from_csv(
     input_csv: Path,
     output_metrics: Path | None = None,
     detector_name: str = "adwin",
-) -> AdaptiveRunSummary:
+) -> dict[str, float | int | str]:
     """Load processed dataset and execute adaptive training loop."""
     frame = pd.read_csv(input_csv)
     summary, _ = run_adaptive_training(frame, detector_name=detector_name)
@@ -198,7 +175,7 @@ def run_adaptive_from_csv(
         output_metrics.parent.mkdir(parents=True, exist_ok=True)
         metrics_payload = (
             "detector,steps,accuracy,f1,drift_events\n"
-            f"{summary.detector},{summary.steps},{summary.accuracy:.4f},{summary.f1:.4f},{summary.drift_events}\n"
+            f"{summary['detector']},{summary['steps']},{summary['accuracy']:.4f},{summary['f1']:.4f},{summary['drift_events']}\n"
         )
         output_metrics.write_text(metrics_payload, encoding="utf-8")
     return summary

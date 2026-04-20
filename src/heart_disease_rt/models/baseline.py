@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 from pathlib import Path
+from datetime import datetime, timezone
 
 import joblib
 import pandas as pd
@@ -18,6 +20,9 @@ from heart_disease_rt.data.schema import FEATURE_COLUMNS, LABEL_COLUMN
 class BaselineArtifact:
     model: Pipeline
     metrics: dict[str, float]
+    y_true: list[int] | None = None
+    y_pred: list[int] | None = None
+    y_prob: list[float] | None = None
 
 
 def _build_pipeline() -> Pipeline:
@@ -52,7 +57,13 @@ def train_baseline(
         "f1": float(f1_score(y_test, y_pred, zero_division=0)),
         "roc_auc": float(roc_auc_score(y_test, y_prob)),
     }
-    return BaselineArtifact(model=pipeline, metrics=metrics)
+    return BaselineArtifact(
+        model=pipeline,
+        metrics=metrics,
+        y_true=[int(value) for value in y_test.tolist()],
+        y_pred=[int(value) for value in y_pred.tolist()],
+        y_prob=[float(value) for value in y_prob.tolist()],
+    )
 
 
 def save_model(model: Pipeline, output_path: Path) -> None:
@@ -63,6 +74,7 @@ def save_model(model: Pipeline, output_path: Path) -> None:
 def run_baseline_training(
     frame: pd.DataFrame,
     artifact_path: Path | None = None,
+    threshold: float = 0.5,
     test_size: float = 0.2,
     random_state: int = 42,
 ) -> BaselineArtifact:
@@ -76,4 +88,31 @@ def run_baseline_training(
     artifact = train_baseline(train_df, test_df)
     if artifact_path is not None:
         save_model(artifact.model, artifact_path)
+        save_model_metadata(
+            artifact_path=artifact_path,
+            metrics=artifact.metrics,
+            threshold=threshold,
+            model_version="baseline-v1",
+        )
     return artifact
+
+
+def save_model_metadata(
+    artifact_path: Path,
+    metrics: dict[str, float],
+    threshold: float = 0.5,
+    model_version: str = "baseline-v1",
+) -> Path:
+    """Persist serving metadata next to the model artifact."""
+    config = {
+        "model_artifact_path": str(artifact_path),
+        "probability_threshold": threshold,
+        "model_version": model_version,
+        "feature_order": FEATURE_COLUMNS,
+        "metrics": metrics,
+        "trained_at_utc": datetime.now(timezone.utc).isoformat(),
+    }
+    config_path = Path("configs/model_config.json")
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text(json.dumps(config, indent=2), encoding="utf-8")
+    return config_path

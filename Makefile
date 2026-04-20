@@ -5,8 +5,11 @@ DATA ?= data/processed/heart_disease_processed.csv
 ARTIFACT ?= models/artifacts/baseline.joblib
 BASELINE_METRICS ?= experiments/tracking/baseline_metrics.json
 ADAPTIVE_METRICS ?= experiments/tracking/adaptive_metrics.json
+DRIFT_REPORT ?= experiments/tracking/drift_scenarios_report.csv
+EVAL_DIR ?= experiments/tracking
+THRESHOLD ?= 0.5
 
-.PHONY: help run-api run-dashboard run-pipeline train-baseline run-adaptive test lint format
+.PHONY: help run-api run-dashboard run-pipeline train-baseline run-adaptive run-drift-scenarios run-evaluation run-all test lint format
 
 help:
 	@echo "Available targets:"
@@ -15,6 +18,9 @@ help:
 	@echo "  make run-pipeline   - Run preprocessing pipeline on CSV"
 	@echo "  make train-baseline - Train and evaluate baseline model"
 	@echo "  make run-adaptive   - Run online/adaptive training loop"
+	@echo "  make run-drift-scenarios - Evaluate detectors on synthetic drifts"
+	@echo "  make run-evaluation - Generate thesis evaluation artifacts"
+	@echo "  make run-all        - Execute full thesis workflow end-to-end"
 	@echo "  make test           - Run unit and integration tests"
 	@echo "  make lint           - Run Ruff linter"
 	@echo "  make format         - Run Ruff formatter"
@@ -26,13 +32,26 @@ run-dashboard:
 	streamlit run dashboard/app.py --server.port 8501
 
 run-pipeline:
-	$(PYTHON) scripts/run_data_pipeline.py --input $(INPUT) --output $(DATA)
+	PYTHONPATH=src $(PYTHON) scripts/run_data_pipeline.py --input $(INPUT) --output $(DATA)
 
 train-baseline:
-	$(PYTHON) scripts/train_baseline.py --input $(DATA) --artifact $(ARTIFACT) --metrics-output $(BASELINE_METRICS)
+	PYTHONPATH=src $(PYTHON) scripts/train_baseline.py --input $(DATA) --artifact $(ARTIFACT) --metrics-output $(BASELINE_METRICS) --threshold $(THRESHOLD)
 
 run-adaptive:
-	$(PYTHON) scripts/run_adaptive_loop.py --input $(DATA) --output-summary $(ADAPTIVE_METRICS)
+	PYTHONPATH=src $(PYTHON) scripts/run_adaptive_loop.py --input $(DATA) --output-summary $(ADAPTIVE_METRICS)
+
+run-drift-scenarios:
+	PYTHONPATH=src $(PYTHON) scripts/run_drift_scenarios.py --input $(DATA) --output-summary $(DRIFT_REPORT)
+
+run-evaluation:
+	PYTHONPATH=src $(PYTHON) scripts/run_evaluation.py --input $(INPUT) --output-dir $(EVAL_DIR)
+
+run-all:
+	PYTHONPATH=src $(PYTHON) scripts/run_data_pipeline.py --input $(INPUT) --output $(DATA)
+	PYTHONPATH=src $(PYTHON) scripts/train_baseline.py --input $(DATA) --artifact $(ARTIFACT) --metrics-output $(BASELINE_METRICS) --threshold $(THRESHOLD)
+	PYTHONPATH=src $(PYTHON) scripts/run_adaptive_loop.py --input $(DATA) --output-summary $(ADAPTIVE_METRICS)
+	PYTHONPATH=src $(PYTHON) scripts/run_drift_scenarios.py --input $(DATA) --output-summary $(DRIFT_REPORT)
+	PYTHONPATH=src $(PYTHON) scripts/run_evaluation.py --input $(INPUT) --output-dir $(EVAL_DIR)
 
 test:
 	pytest -q

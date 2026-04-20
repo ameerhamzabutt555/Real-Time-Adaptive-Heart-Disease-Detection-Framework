@@ -79,3 +79,26 @@ def save_adaptive_report_plots(
         "accuracy_progress_plot": str(accuracy_plot_path),
         "detector_comparison_plot": str(detector_plot_path),
     }
+
+
+def build_confusion_summary(
+    y_true: pd.Series,
+    y_pred: pd.Series,
+) -> dict[str, int | float]:
+    """Return confusion matrix components with FN-focused metrics."""
+    true = y_true.astype(int)
+    pred = y_pred.astype(int)
+    tp = int(((true == 1) & (pred == 1)).sum())
+    tn = int(((true == 0) & (pred == 0)).sum())
+    fp = int(((true == 0) & (pred == 1)).sum())
+    fn = int(((true == 1) & (pred == 0)).sum())
+    total = max(1, len(true))
+    fn_rate = fn / max(1, int((true == 1).sum()))
+    return {
+        "tp": tp,
+        "tn": tn,
+        "fp": fp,
+        "fn": fn,
+        "false_negative_rate": float(fn_rate),
+        "error_rate": float((fp + fn) / total),
+    }

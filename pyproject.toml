@@ -9,6 +9,7 @@ dependencies = [
     "pandas",
     "scikit-learn",
     "river",
+    "scipy",
     "joblib",
     "matplotlib",
     "fastapi",

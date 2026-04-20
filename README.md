@@ -84,8 +84,8 @@ python -m pytest -q
 ```
 
 Detailed documentation is available in:
-- `docs/PROJECT_SETUP_AND_MODULE_GUIDE.md`
-- `docs/PROJECT_SETUP_AND_MODULE_GUIDE.docx` (Word file)
+- `docs/PROJECT_SETUP_AND_TECHNICAL_EXPLANATION.doc`
+- `docs/PROJECT_SETUP_AND_TECHNICAL_EXPLANATION.docx` (Word file)
 
 ## Adaptive Detector Comparison + Reports
 
@@ -100,5 +100,24 @@ make run-adaptive DATA=data/processed/heart_processed.csv
 
 Outputs are generated under:
 - `experiments/tracking/adaptive_metrics.json`
-- `experiments/runs/adaptive/<detector>/progress.csv`
+- `experiments/tracking/adaptive_progress.csv`
+- `experiments/tracking/adaptive_progress_<detector>.csv`
 - `experiments/runs/adaptive/plots/*.png`
+
+## Thesis Completion Commands
+
+Use these targets to generate all thesis evidence artifacts:
+
+```bash
+make run-drift-scenarios DATA=data/processed/heart_processed.csv
+make run-evaluation INPUT=data/raw/heart.csv EVAL_DIR=experiments/tracking
+make run-all INPUT=data/raw/heart.csv
+```
+
+Main outputs:
+- `experiments/tracking/baseline_vs_adaptive.csv`
+- `experiments/tracking/drift_scenarios_report.csv`
+- `experiments/tracking/false_negative_analysis.json`
+- `experiments/tracking/statistical_comparison.json`
+- `experiments/tracking/feature_importance.csv`
+- `experiments/tracking/local_explanations.csv`

@@ -8,6 +8,10 @@ from heart_disease_rt.models.adaptive import (
     run_adaptive_training,
 )
 from heart_disease_rt.models.baseline import run_baseline_training
+from heart_disease_rt.monitoring.drift_scenarios import (
+    evaluate_detector_scenarios,
+    simulate_drift_scenarios,
+)
 
 __all__ = [
     "SUPPORTED_DETECTORS",
@@ -16,4 +20,6 @@ __all__ = [
     "run_adaptive_experiment",
     "run_adaptive_training",
     "run_baseline_training",
+    "simulate_drift_scenarios",
+    "evaluate_detector_scenarios",
 ]

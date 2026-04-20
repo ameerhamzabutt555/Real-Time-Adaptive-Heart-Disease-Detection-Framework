@@ -53,18 +53,20 @@ def main() -> None:
         processed,
         detector_names=detectors,
     )
-    summary_df = result["summary"]
-    progress_df = result["progress"]
+    summary_df = result["summary_df"]
+    progress_df = result["progress_df"]
 
     args.output_progress.parent.mkdir(parents=True, exist_ok=True)
     progress_df.to_csv(args.output_progress, index=False)
 
     args.output_plot.mkdir(parents=True, exist_ok=True)
-    from heart_disease_rt.monitoring import generate_report_artifacts
+    from heart_disease_rt.monitoring import save_adaptive_report_plots
 
-    plot_paths = generate_report_artifacts(progress_df, summary_df, args.output_plot)
+    plot_paths = save_adaptive_report_plots(progress_df, summary_df, args.output_plot)
 
+    summary_df = summary_df.sort_values("accuracy", ascending=False).reset_index(drop=True)
     detector_summary: dict[str, dict[str, float | int]] = {}
+    progress_files: dict[str, str] = {}
     for _, row in summary_df.iterrows():
         detector_summary[str(row["detector"])] = {
             "accuracy": float(row["accuracy"]),
@@ -72,9 +74,15 @@ def main() -> None:
             "drift_events": int(row["drift_events"]),
             "steps": int(row["steps"]),
         }
+        detector = str(row["detector"])
+        per_detector = progress_df[progress_df["detector"] == detector].copy()
+        per_detector_path = args.output_progress.parent / f"adaptive_progress_{detector}.csv"
+        per_detector.to_csv(per_detector_path, index=False)
+        progress_files[detector] = str(per_detector_path)
 
     best_row = summary_df.iloc[0].to_dict() if not summary_df.empty else {}
     summary = {
+        "summary": result["summary"],
         "best_detector": str(best_row.get("detector", "")),
         "accuracy": float(best_row.get("accuracy", 0.0)),
         "f1": float(best_row.get("f1", 0.0)),
@@ -82,6 +90,7 @@ def main() -> None:
         "steps": int(best_row.get("steps", 0)),
         "detector_summary": detector_summary,
         "progress_csv": str(args.output_progress),
+        "progress_files": progress_files,
         "plots": plot_paths,
     }
 
