@@ -64,6 +64,29 @@ make train-baseline DATA=data/processed/heart_processed.csv
 make run-adaptive DATA=data/processed/heart_processed.csv
 ```
 
+## Complete Local Setup and Testing (Fresh Clone)
+
+```bash
+# 1) Clone and enter project
+git clone https://github.com/ameerhamzabutt555/Real-Time-Adaptive-Heart-Disease-Detection-Framework.git
+cd Real-Time-Adaptive-Heart-Disease-Detection-Framework
+
+# 2) Create and activate virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+# 3) Install dependencies
+python -m pip install --upgrade pip
+python -m pip install numpy pandas scikit-learn river joblib matplotlib fastapi pydantic "uvicorn[standard]" streamlit pytest httpx
+
+# 4) Run full tests
+python -m pytest -q
+```
+
+Detailed documentation is available in:
+- `docs/PROJECT_SETUP_AND_MODULE_GUIDE.md`
+- `docs/PROJECT_SETUP_AND_MODULE_GUIDE.docx` (Word file)
+
 ## Adaptive Detector Comparison + Reports
 
 Run adaptive experiment across multiple drift detectors and auto-generate:
