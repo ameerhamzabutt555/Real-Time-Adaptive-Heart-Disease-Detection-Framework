@@ -1,0 +1,38 @@
+# Python cache/build artifacts
+__pycache__/
+*.py[cod]
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Data/model artifacts (keep folder structure, not large binaries)
+data/raw/*
+data/interim/*
+data/processed/*
+data/external/*
+!data/**/.gitkeep
+
+models/artifacts/*
+!models/artifacts/.gitkeep
+
+# Experiment outputs
+experiments/runs/*
+experiments/tracking/*
+!experiments/**/.gitkeep
+
+# Logs and local files
+*.log
+.DS_Store
+.idea/
+.vscode/
