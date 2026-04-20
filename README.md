@@ -63,3 +63,19 @@ make run-pipeline INPUT=data/raw/heart.csv DATA=data/processed/heart_processed.c
 make train-baseline DATA=data/processed/heart_processed.csv
 make run-adaptive DATA=data/processed/heart_processed.csv
 ```
+
+## Adaptive Detector Comparison + Reports
+
+Run adaptive experiment across multiple drift detectors and auto-generate:
+- summary JSON,
+- per-detector progress CSVs,
+- comparison plot PNGs.
+
+```bash
+make run-adaptive DATA=data/processed/heart_processed.csv
+```
+
+Outputs are generated under:
+- `experiments/tracking/adaptive_metrics.json`
+- `experiments/runs/adaptive/<detector>/progress.csv`
+- `experiments/runs/adaptive/plots/*.png`

@@ -10,6 +10,7 @@ dependencies = [
     "scikit-learn",
     "river",
     "joblib",
+    "matplotlib",
     "fastapi",
     "pydantic",
     "uvicorn[standard]",

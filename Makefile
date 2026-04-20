@@ -32,7 +32,7 @@ train-baseline:
 	$(PYTHON) scripts/train_baseline.py --input $(DATA) --artifact $(ARTIFACT) --metrics-output $(BASELINE_METRICS)
 
 run-adaptive:
-	$(PYTHON) scripts/run_adaptive_loop.py --input $(DATA) --output $(ADAPTIVE_METRICS)
+	$(PYTHON) scripts/run_adaptive_loop.py --input $(DATA) --output-summary $(ADAPTIVE_METRICS)
 
 test:
 	pytest -q

@@ -23,7 +23,8 @@ def test_run_adaptive_training_returns_summary() -> None:
         }
     )
 
-    summary = run_adaptive_training(frame)
+    summary, progress = run_adaptive_training(frame)
     assert summary.steps == 4
     assert 0.0 <= summary.accuracy <= 1.0
     assert 0.0 <= summary.f1 <= 1.0
+    assert len(progress) == 4
