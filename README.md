@@ -122,4 +122,26 @@ Main outputs:
 - `experiments/tracking/statistical_comparison.json`
 - `experiments/tracking/feature_importance.csv`
 - `experiments/tracking/local_explanations.csv`
+
+## One-Command Local Bootstrap (Setup + Test + Full Run)
+
+Run this single script from repo root:
+
+```bash
+bash scripts/bootstrap_and_run_all.sh
+```
+
+Optional custom paths:
+
+```bash
+bash scripts/bootstrap_and_run_all.sh data/raw/heart_uci_303.csv data/processed/heart_uci_303_processed.csv experiments/tracking
+```
+
+This script performs:
+- virtual environment creation (`.venv`) if missing,
+- dependency installation,
+- official UCI dataset fetch (303 rows),
+- full test suite (`pytest`),
+- full thesis workflow (`make run-all`),
+- repeated CV benchmark (`make run-cv-benchmark`).
 - `experiments/tracking/cv_benchmark_summary.csv`
