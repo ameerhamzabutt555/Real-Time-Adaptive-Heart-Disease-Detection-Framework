@@ -104,6 +104,37 @@ Outputs are generated under:
 - `experiments/tracking/adaptive_progress_<detector>.csv`
 - `experiments/runs/adaptive/plots/*.png`
 
+## Adaptive API (Online Learning Mode)
+
+In addition to static baseline endpoints (`/predict`), the API now exposes adaptive online endpoints:
+
+- `GET /adaptive/status` - returns online learning state (samples seen, drift events, online metrics).
+- `POST /adaptive/predict` - predicts with in-memory adaptive model.
+- `POST /adaptive/learn` - performs one online learning step with labeled feedback.
+
+Example learn payload:
+
+```json
+{
+  "patient": {
+    "age": 53,
+    "sex": 1,
+    "resting_bp": 132.0,
+    "cholesterol": 246.0,
+    "fasting_blood_sugar": 0,
+    "restecg": 1,
+    "max_heart_rate": 151.0,
+    "exercise_angina": 1,
+    "chest_pain_type": 2,
+    "oldpeak": 1.3,
+    "slope": 1,
+    "ca": 0,
+    "thal": 2
+  },
+  "label": 1
+}
+```
+
 ## Thesis Completion Commands
 
 Use these targets to generate all thesis evidence artifacts:
