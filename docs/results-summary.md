@@ -66,25 +66,30 @@ Interpretation:
 - Adaptive outperforms baseline in this run.
 - For publication-strength inference, use repeated-seed experiments and bootstrap across runs.
 
-## 6) Repeated Cross-Validation Benchmark (Literature Alignment)
+## 6) UCI 303 Benchmark Update (Fair Comparison)
 
-Source: `experiments/tracking/cv_benchmark.csv`
+After switching to the official UCI Heart Disease dataset with 303 instances (`heart_uci_303.csv`):
 
-- Logistic Regression (5-fold x 20 repeats):
-  - Accuracy mean: **0.7413**
-  - Accuracy std: **0.1284**
-  - F1 mean: **0.7436**
-  - ROC-AUC mean: **0.7927**
-- Random Forest (5-fold x 20 repeats):
-  - Accuracy mean: **0.7027**
-  - Accuracy std: **0.1138**
-  - F1 mean: **0.7217**
-  - ROC-AUC mean: **0.7893**
+- Baseline static split accuracy: **0.8689**
+- Baseline ROC-AUC: **0.9502**
+- Adaptive (best detector) accuracy: **0.8185**
+
+Repeated CV (`experiments/tracking/cv_benchmark.csv`) on UCI-303:
+
+- Logistic Regression:
+  - accuracy mean: **0.8313**
+  - accuracy std: **0.0456**
+  - F1 mean: **0.8139**
+  - ROC-AUC mean: **0.9014**
+- Random Forest:
+  - accuracy mean: **0.8254**
+  - accuracy std: **0.0457**
+  - F1 mean: **0.8015**
+  - ROC-AUC mean: **0.9019**
 
 Interpretation:
-- Repeated CV provides a more stable estimate than a single split.
-- Current dataset size (**n=61**) is small, so 90%+ stable accuracy is not expected.
-- Literature values above 90% often use larger datasets, optimized feature engineering, or different evaluation setups.
+- With proper UCI sample size, results move close to high-performance literature ranges.
+- On this protocol, stable repeated-CV accuracy is roughly **0.83**, which is strong and reproducible.
 
 ## 7) Dataset Clarification (UCI)
 

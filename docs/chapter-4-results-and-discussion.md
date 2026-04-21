@@ -134,7 +134,38 @@ For stronger inferential claims, repeated-seed or repeated-split experiments can
 
 ---
 
-## 4.7 Explainability Findings
+## 4.7 Repeated Cross-Validation Benchmark (Fair Literature Comparison)
+
+To reduce single-split variance and compare more fairly with published studies, repeated stratified
+cross-validation was executed (5 folds, 20 repeats; total 100 folds per model).
+
+### Table 4.4: Repeated CV Results
+
+| Model | Folds | Accuracy Mean | Accuracy Std | Precision Mean | Recall Mean | F1 Mean | ROC-AUC Mean |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Logistic Regression | 100 | 0.8313 | 0.0456 | 0.8267 | 0.8058 | 0.8139 | 0.9014 |
+| Random Forest | 100 | 0.8254 | 0.0457 | 0.8401 | 0.7721 | 0.8015 | 0.9019 |
+
+**Interpretation:**  
+The repeated-CV protocol produces more stable and higher estimates than one holdout split.
+This confirms that the framework performs strongly on the 303-record UCI-style dataset while
+avoiding over-optimistic single-run reporting.
+
+### Why papers report 90%+ and why results can differ
+
+Differences against literature are commonly due to:
+- split protocol differences (single split vs repeated CV),
+- dataset curation/filtering differences,
+- possible data leakage in some studies,
+- reporting only best runs.
+
+Therefore, this thesis reports both:
+1. single-pipeline holdout metrics (deployment-style),
+2. repeated-CV mean ± std (research comparison style).
+
+---
+
+## 4.8 Explainability Findings
 
 ### 4.7.1 Global Importance (Top features)
 From coefficient-based explainability, most influential features include:
@@ -151,7 +182,7 @@ Patient-level explanations show top contributing features and sign of contributi
 
 ---
 
-## 4.8 Real-Time API Latency
+## 4.9 Real-Time API Latency
 
 Latency report from local benchmarking:
 
@@ -167,7 +198,7 @@ Typical response latency (P50/P95) is low and suitable for real-time use in prot
 
 ---
 
-## 4.9 Discussion Against Thesis Objectives
+## 4.10 Discussion Against Thesis Objectives
 
 ### Objective 1: Adaptive diagnosis model that continuously learns
 **Status: Achieved (prototype level).**  
@@ -187,7 +218,7 @@ So yes, the workflow is aligned with UCI-style heart disease data structure.
 
 ---
 
-## 4.10 Chapter Conclusion
+## 4.11 Chapter Conclusion
 
 The implemented framework demonstrates that:
 

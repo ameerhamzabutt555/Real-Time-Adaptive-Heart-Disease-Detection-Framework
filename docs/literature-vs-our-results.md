@@ -14,39 +14,41 @@ Directly comparing one single split from a very small dataset against such paper
 
 ## 2) What dataset are we using right now?
 
-Current file in this repository:
-- `data/raw/heart.csv`
+Current repository now contains both:
+- `data/raw/heart.csv` (small local sample used in early runs)
+- `data/raw/heart_uci_303.csv` (**official UCI id=45 download, 303 rows**)
 
 This file follows **UCI Heart Disease-style schema**:
 - columns like `cp`, `trestbps`, `chol`, `fbs`, `thalach`, `exang`, `target`
 - transformed to canonical schema during preprocessing.
 
-However, this specific local sample currently has only about **61 records**, which is much smaller than commonly reported benchmark setups.
+If you run benchmarks on `heart_uci_303.csv`, you get a more representative estimate for literature comparison.
 
 ---
 
 ## 3) Repeated CV benchmark (more reliable than one split)
 
 Source:
-- `experiments/tracking/cv_benchmark.csv`
+- `experiments/tracking/cv_benchmark.csv` (latest run on `heart_uci_303.csv`)
 
 ### Summary
 
 - Logistic Regression:
-  - mean accuracy: **0.7413**
-  - std: **0.1284**
-  - mean F1: **0.7436**
-  - mean ROC-AUC: **0.7927**
+  - mean accuracy: **0.8313**
+  - std: **0.0456**
+  - mean F1: **0.8139**
+  - mean ROC-AUC: **0.9014**
 
 - Random Forest:
-  - mean accuracy: **0.7027**
-  - std: **0.1138**
-  - mean F1: **0.7217**
-  - mean ROC-AUC: **0.7893**
+  - mean accuracy: **0.8254**
+  - std: **0.0457**
+  - mean F1: **0.8015**
+  - mean ROC-AUC: **0.9019**
 
 Interpretation:
 - Repeated CV gives a fairer estimate than single split.
-- On this small sample, a realistic range is around 0.70–0.75 for accuracy, not stable 0.90+.
+- On official UCI-303, realistic and reproducible performance is around **0.83 mean accuracy** for this pipeline.
+- This is strong, but still below some 90%+ papers, which can be due to architecture differences, feature engineering choices, or evaluation leakage in some reports.
 
 ---
 
