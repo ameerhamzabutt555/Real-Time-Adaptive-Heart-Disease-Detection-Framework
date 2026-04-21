@@ -6,10 +6,18 @@ from __future__ import annotations
 import argparse
 import json
 import statistics
+import sys
 import time
 from pathlib import Path
 
 from fastapi.testclient import TestClient
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+SRC_DIR = ROOT_DIR / "src"
+for module_path in (ROOT_DIR, SRC_DIR):
+    module_path_str = str(module_path)
+    if module_path_str not in sys.path:
+        sys.path.insert(0, module_path_str)
 
 from api.main import app
 

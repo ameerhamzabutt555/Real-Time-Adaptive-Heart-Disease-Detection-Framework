@@ -13,6 +13,8 @@ DATASET_OUT="${DATASET_OUT:-data/raw/heart_uci_303.csv}"
 PROCESSED_OUT="${PROCESSED_OUT:-data/processed/heart_uci_303_processed.csv}"
 EVAL_DIR="${EVAL_DIR:-experiments/tracking}"
 SKIP_FULL_RUN="${SKIP_FULL_RUN:-0}"
+ARTIFACT_OUT="${ARTIFACT_OUT:-models/artifacts/baseline.joblib}"
+THRESHOLD="${THRESHOLD:-0.5}"
 
 for arg in "$@"; do
   case "$arg" in
@@ -39,16 +41,18 @@ echo "==> [1/8] Creating virtual environment ($VENV_DIR)"
 ensure_venv
 
 # =========================
-# Activate venv (FIXED)
+# Activate venv (FIXED ONLY ONCE)
 # =========================
 echo "==> Activating virtual environment"
 
 if [ -f "$VENV_DIR/Scripts/activate" ]; then
+  # Windows (Git Bash)
   source "$VENV_DIR/Scripts/activate"
 elif [ -f "$VENV_DIR/bin/activate" ]; then
+  # Linux / Mac / WSL
   source "$VENV_DIR/bin/activate"
 else
-  echo "ERROR: Cannot find virtual environment activation script"
+  echo "ERROR: Could not find virtual environment activation script"
   exit 1
 fi
 
@@ -67,7 +71,7 @@ python -m pip install \
   fastapi pydantic "uvicorn[standard]" streamlit pytest httpx ucimlrepo python-docx
 
 # =========================
-# Dataset fetch
+# Fetch dataset
 # =========================
 echo "==> [4/8] Fetching dataset"
 
@@ -79,7 +83,7 @@ import pandas as pd
 from pathlib import Path
 import os
 
-out = Path(os.environ.get("DATASET_OUT", "data/raw/heart_uci_303.csv"))
+out = Path(os.environ.get("DATASET_OUT"))
 
 ds = fetch_ucirepo(id=45)
 
@@ -99,30 +103,75 @@ print(f"Saved dataset -> {out} | shape={df.shape}")
 PY
 
 # =========================
-# Tests (FIXED WINDOWS ISSUE)
+# Tests
 # =========================
 echo "==> [5/8] Running tests"
 
-# FIX: normalize path issues for Windows
 export PYTHONPATH="$(pwd)/src"
-
 python -m pytest -q
 
 # =========================
-# Workflow
+# Full workflow
+# =========================
+run_full_workflow() {
+  echo "==> Running full ML pipeline"
+
+  PYTHONPATH=src python scripts/run_data_pipeline.py \
+    --input "$DATASET_OUT" \
+    --output "$PROCESSED_OUT"
+
+  PYTHONPATH=src python scripts/train_baseline.py \
+    --input "$PROCESSED_OUT" \
+    --artifact "$ARTIFACT_OUT" \
+    --metrics-output "$EVAL_DIR/baseline_metrics.json" \
+    --threshold "$THRESHOLD"
+
+  PYTHONPATH=src python scripts/run_adaptive_loop.py \
+    --input "$PROCESSED_OUT" \
+    --output-summary "$EVAL_DIR/adaptive_metrics.json"
+
+  PYTHONPATH=src python scripts/run_drift_scenarios.py \
+    --input "$PROCESSED_OUT" \
+    --output-summary "$EVAL_DIR/drift_scenarios_report.csv"
+
+  PYTHONPATH=src python scripts/run_cv_benchmark.py \
+    --input "$PROCESSED_OUT" \
+    --output "$EVAL_DIR/cv_benchmark.csv"
+
+  PYTHONPATH=src python scripts/run_evaluation.py \
+    --input "$DATASET_OUT" \
+    --output-dir "$EVAL_DIR"
+}
+
+run_cv_benchmark() {
+  echo "==> Running CV benchmark"
+
+  PYTHONPATH=src python scripts/run_cv_benchmark.py \
+    --input "$PROCESSED_OUT" \
+    --output "$EVAL_DIR/cv_benchmark.csv"
+}
+
+# =========================
+# Execution
 # =========================
 if [[ "$SKIP_FULL_RUN" == "1" ]]; then
   echo "==> Skipping full workflow"
 else
   echo "==> [6/8] Running full workflow"
-  make run-all INPUT="$DATASET_OUT" DATA="$PROCESSED_OUT" EVAL_DIR="$EVAL_DIR"
-
-  echo "==> [7/8] Running CV benchmark"
-  make run-cv-benchmark DATA="$PROCESSED_OUT" EVAL_DIR="$EVAL_DIR"
-
-  echo "==> [8/8] Running latency check"
-  python scripts/run_latency_check.py --requests 50 --output "$EVAL_DIR/latency_report.json"
+  run_full_workflow
 fi
+
+if [[ "$SKIP_FULL_RUN" == "1" ]]; then
+  echo "==> Skipping CV benchmark"
+else
+  echo "==> [7/8] Running CV benchmark"
+  run_cv_benchmark
+fi
+
+echo "==> [8/8] Running latency check"
+python scripts/run_latency_check.py \
+  --requests 50 \
+  --output "$EVAL_DIR/latency_report.json"
 
 # =========================
 # Done
