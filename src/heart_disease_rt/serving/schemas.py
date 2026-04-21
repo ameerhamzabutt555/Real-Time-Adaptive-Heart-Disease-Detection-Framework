@@ -34,4 +34,30 @@ class ThresholdUpdateRequest(BaseModel):
     threshold: float = Field(ge=0.0, le=1.0)
 
 
+class AdaptiveLearnRequest(BaseModel):
+    patient: PatientRecord
+    label: int = Field(ge=0, le=1)
+    threshold: float | None = Field(default=None, ge=0.0, le=1.0)
+
+
+class AdaptiveLearnResponse(PredictionResponse):
+    true_label: int = Field(ge=0, le=1)
+    detector: str
+    drift_detected: bool
+    seen_samples: int = Field(ge=0)
+    online_accuracy: float = Field(ge=0.0, le=1.0)
+    online_f1: float = Field(ge=0.0, le=1.0)
+    drift_events: int = Field(ge=0)
+
+
+class AdaptiveStatusResponse(BaseModel):
+    model_version: str
+    detector: str
+    threshold: float = Field(ge=0.0, le=1.0)
+    seen_samples: int = Field(ge=0)
+    drift_events: int = Field(ge=0)
+    online_accuracy: float = Field(ge=0.0, le=1.0)
+    online_f1: float = Field(ge=0.0, le=1.0)
+
+
 PredictionRequest = PatientRecord
