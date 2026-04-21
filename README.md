@@ -111,6 +111,7 @@ Use these targets to generate all thesis evidence artifacts:
 ```bash
 make run-drift-scenarios DATA=data/processed/heart_processed.csv
 make run-evaluation INPUT=data/raw/heart.csv EVAL_DIR=experiments/tracking
+make run-cv-benchmark INPUT=data/raw/heart.csv
 make run-all INPUT=data/raw/heart.csv
 ```
 
@@ -121,3 +122,4 @@ Main outputs:
 - `experiments/tracking/statistical_comparison.json`
 - `experiments/tracking/feature_importance.csv`
 - `experiments/tracking/local_explanations.csv`
+- `experiments/tracking/cv_benchmark_summary.csv`

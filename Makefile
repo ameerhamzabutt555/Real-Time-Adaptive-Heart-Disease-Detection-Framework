@@ -6,10 +6,11 @@ ARTIFACT ?= models/artifacts/baseline.joblib
 BASELINE_METRICS ?= experiments/tracking/baseline_metrics.json
 ADAPTIVE_METRICS ?= experiments/tracking/adaptive_metrics.json
 DRIFT_REPORT ?= experiments/tracking/drift_scenarios_report.csv
+CV_REPORT ?= experiments/tracking/cv_benchmark.csv
 EVAL_DIR ?= experiments/tracking
 THRESHOLD ?= 0.5
 
-.PHONY: help run-api run-dashboard run-pipeline train-baseline run-adaptive run-drift-scenarios run-evaluation run-all test lint format
+.PHONY: help run-api run-dashboard run-pipeline train-baseline run-adaptive run-drift-scenarios run-cv-benchmark run-evaluation run-all test lint format
 
 help:
 	@echo "Available targets:"
@@ -19,6 +20,7 @@ help:
 	@echo "  make train-baseline - Train and evaluate baseline model"
 	@echo "  make run-adaptive   - Run online/adaptive training loop"
 	@echo "  make run-drift-scenarios - Evaluate detectors on synthetic drifts"
+	@echo "  make run-cv-benchmark - Repeated CV benchmark for fair comparison"
 	@echo "  make run-evaluation - Generate thesis evaluation artifacts"
 	@echo "  make run-all        - Execute full thesis workflow end-to-end"
 	@echo "  make test           - Run unit and integration tests"
@@ -43,6 +45,9 @@ run-adaptive:
 run-drift-scenarios:
 	PYTHONPATH=src $(PYTHON) scripts/run_drift_scenarios.py --input $(DATA) --output-summary $(DRIFT_REPORT)
 
+run-cv-benchmark:
+	PYTHONPATH=src $(PYTHON) scripts/run_cv_benchmark.py --input $(DATA) --output $(CV_REPORT)
+
 run-evaluation:
 	PYTHONPATH=src $(PYTHON) scripts/run_evaluation.py --input $(INPUT) --output-dir $(EVAL_DIR)
 
@@ -51,6 +56,7 @@ run-all:
 	PYTHONPATH=src $(PYTHON) scripts/train_baseline.py --input $(DATA) --artifact $(ARTIFACT) --metrics-output $(BASELINE_METRICS) --threshold $(THRESHOLD)
 	PYTHONPATH=src $(PYTHON) scripts/run_adaptive_loop.py --input $(DATA) --output-summary $(ADAPTIVE_METRICS)
 	PYTHONPATH=src $(PYTHON) scripts/run_drift_scenarios.py --input $(DATA) --output-summary $(DRIFT_REPORT)
+	PYTHONPATH=src $(PYTHON) scripts/run_cv_benchmark.py --input $(DATA) --output $(CV_REPORT)
 	PYTHONPATH=src $(PYTHON) scripts/run_evaluation.py --input $(INPUT) --output-dir $(EVAL_DIR)
 
 test:

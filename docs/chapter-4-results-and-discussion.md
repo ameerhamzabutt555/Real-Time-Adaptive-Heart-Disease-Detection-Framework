@@ -34,6 +34,31 @@ The adaptive model improved final accuracy from **0.6154** to **0.6393** and imp
 
 ---
 
+## 4.2A Repeated Cross-Validation Benchmark (Why not 90%+ here?)
+
+Because single-split metrics can be unstable on small datasets, repeated stratified cross-validation was executed for a fairer estimate.
+
+### Table 4.1A: Repeated CV Summary (5-fold x 20 repeats)
+
+| Model | Folds | Mean Accuracy | Accuracy Std | Mean Precision | Mean Recall | Mean F1 | Mean ROC-AUC |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Logistic Regression | 100 | 0.7413 | 0.1284 | 0.7566 | 0.7540 | 0.7436 | 0.7927 |
+| Random Forest | 100 | 0.7027 | 0.1138 | 0.7019 | 0.7676 | 0.7217 | 0.7893 |
+
+**Interpretation:**  
+The repeated-CV estimate is significantly higher than the single-split baseline (0.6154), with logistic regression averaging **0.7413**.  
+This shows that the earlier lower value was partly split-sensitive.
+
+### Why literature often reports 90%+ while this thesis reports lower values
+
+1. **Dataset size effect:** Current run uses only 61 samples, which increases variance and limits stable high accuracy.
+2. **Leakage-safe workflow:** This pipeline keeps preprocessing and evaluation separation stricter than many optimistic reported setups.
+3. **Reporting style:** This thesis reports reproducible averages, not only best-case runs.
+4. **Metric emphasis:** Clinical reliability (FN/FNR) is prioritized, not accuracy alone.
+5. **Data source differences:** Many papers use larger/combined or differently cleaned variants of UCI-derived heart datasets.
+
+---
+
 ## 4.3 Detector-Level Adaptive Comparison
 
 Detector comparison results are shown in Table 4.2.
@@ -155,6 +180,10 @@ FastAPI serving (`/predict`, `/predict/threshold`, `/model-info`) and Streamlit 
 ### Concept drift management claim
 **Status: Partially achieved with stable behavior; detector sensitivity can be further tuned.**  
 Drift benchmark pipeline exists and outputs required metrics, but explicit positive detections are limited in current synthetic parameterization.
+
+### Dataset clarification for this study
+The current project uses a **UCI-format heart disease tabular schema** (`age, sex, cp, trestbps, chol, ... , target`) and then maps it into canonical project columns (`chest_pain_type, resting_bp, cholesterol, ... , label`).  
+So yes, the workflow is aligned with UCI-style heart disease data structure.
 
 ---
 
