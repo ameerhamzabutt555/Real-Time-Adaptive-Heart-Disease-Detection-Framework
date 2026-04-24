@@ -1,7 +1,7 @@
 PYTHON ?= python3
 APP_MODULE ?= api.main:app
-INPUT ?= data/raw/heart.csv
-DATA ?= data/processed/heart_disease_processed.csv
+INPUT ?= data/raw/heart_uci_303.csv
+DATA ?= data/processed/heart_uci_303_processed.csv
 ARTIFACT ?= models/artifacts/baseline.joblib
 BASELINE_METRICS ?= experiments/tracking/baseline_metrics.json
 ADAPTIVE_METRICS ?= experiments/tracking/adaptive_metrics.json
@@ -28,10 +28,10 @@ help:
 	@echo "  make format         - Run Ruff formatter"
 
 run-api:
-	uvicorn $(APP_MODULE) --reload --host 0.0.0.0 --port 8000
+	PYTHONPATH=src uvicorn $(APP_MODULE) --reload --host 0.0.0.0 --port 8000
 
 run-dashboard:
-	streamlit run dashboard/app.py --server.port 8501
+	PYTHONPATH=src streamlit run dashboard/app.py --server.port 8501
 
 run-pipeline:
 	PYTHONPATH=src $(PYTHON) scripts/run_data_pipeline.py --input $(INPUT) --output $(DATA)

@@ -64,6 +64,18 @@ make train-baseline DATA=data/processed/heart_processed.csv
 make run-adaptive DATA=data/processed/heart_processed.csv
 ```
 
+## Run API + Dashboard Together
+
+After you have a working `.venv` (Python 3.10+), you can run both the backend (FastAPI) and the frontend (Streamlit dashboard) with one command:
+
+```bash
+bash scripts/run_api_and_dashboard.sh
+```
+
+Defaults:
+- API: `http://localhost:8000` (Swagger: `http://localhost:8000/docs`)
+- Dashboard: `http://localhost:8501`
+
 ## Complete Local Setup and Testing (Fresh Clone)
 
 ```bash
@@ -86,6 +98,7 @@ python -m pytest -q
 Detailed documentation is available in:
 - `docs/PROJECT_SETUP_AND_TECHNICAL_EXPLANATION.doc`
 - `docs/PROJECT_SETUP_AND_TECHNICAL_EXPLANATION.docx` (Word file)
+- `docs/API.md` (API request/response documentation)
 
 ## Adaptive Detector Comparison + Reports
 
