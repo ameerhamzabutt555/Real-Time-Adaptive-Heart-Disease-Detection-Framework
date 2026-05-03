@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1300" height="620" viewBox="0 0 1300 620">
+  <rect width="100%" height="100%" fill="white"/>
+  <text x="650.0" y="34" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#0f172a">Static Baseline Machine Learning Pipeline</text>
+
+  <rect x="60.0" y="265.0" width="190.0" height="90" rx="14" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="155.0" y="297.0" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#0f172a">Canonical</text>
+  <text x="155.0" y="317.0" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#0f172a">Features</text>
+  <line x1="250.0" y1="310.0" x2="277.0" y2="310.0" stroke="#64748b" stroke-width="3"/>
+  <polygon points="277.0,303.0 289.0,310.0 277.0,317.0" fill="#64748b"/>
+  <rect x="285.0" y="265.0" width="190.0" height="90" rx="14" fill="#f0f9ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="380.0" y="297.0" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#0f172a">StandardScaler</text>
+  <text x="380.0" y="317.0" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#0f172a">Numeric</text>
+  <line x1="475.0" y1="310.0" x2="502.0" y2="310.0" stroke="#64748b" stroke-width="3"/>
+  <polygon points="502.0,303.0 514.0,310.0 502.0,317.0" fill="#64748b"/>
+  <rect x="510.0" y="265.0" width="190.0" height="90" rx="14" fill="#ecfeff" stroke="#2563eb" stroke-width="2"/>
+  <text x="605.0" y="297.0" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#0f172a">OneHotEncoder</text>
+  <text x="605.0" y="317.0" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#0f172a">Categorical</text>
+  <line x1="700.0" y1="310.0" x2="727.0" y2="310.0" stroke="#64748b" stroke-width="3"/>
+  <polygon points="727.0,303.0 739.0,310.0 727.0,317.0" fill="#64748b"/>
+  <rect x="735.0" y="265.0" width="190.0" height="90" rx="14" fill="#f0fdf4" stroke="#2563eb" stroke-width="2"/>
+  <text x="830.0" y="297.0" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#0f172a">Logistic Regression</text>
+  <text x="830.0" y="317.0" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#0f172a">or HGB</text>
+  <line x1="925.0" y1="310.0" x2="952.0" y2="310.0" stroke="#64748b" stroke-width="3"/>
+  <polygon points="952.0,303.0 964.0,310.0 952.0,317.0" fill="#64748b"/>
+  <rect x="960.0" y="265.0" width="190.0" height="90" rx="14" fill="#fef2f2" stroke="#2563eb" stroke-width="2"/>
+  <text x="1055.0" y="297.0" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#0f172a">Risk</text>
+  <text x="1055.0" y="317.0" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#0f172a">Prediction</text>
+  <text x="650.0" y="585" text-anchor="middle" font-family="Arial" font-size="15" fill="#64748b">Baseline artifact is saved with joblib and serving metadata is stored in configs/model_config.json.</text>
+</svg>

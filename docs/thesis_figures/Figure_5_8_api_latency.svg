@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="680" viewBox="0 0 1100 680">
+  <rect width="100%" height="100%" fill="white"/>
+  <text x="550.0" y="34" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#0f172a">API Latency Performance</text>
+
+  <line x1="105" y1="570.0" x2="1045" y2="570.0" stroke="#cbd5e1" stroke-width="1" opacity="0.65"/>
+  <text x="93" y="575.0" text-anchor="end" font-family="Arial" font-size="13" fill="#64748b">0.00</text>
+  <line x1="105" y1="472.0" x2="1045" y2="472.0" stroke="#cbd5e1" stroke-width="1" opacity="0.65"/>
+  <text x="93" y="477.0" text-anchor="end" font-family="Arial" font-size="13" fill="#64748b">1.80</text>
+  <line x1="105" y1="374.0" x2="1045" y2="374.0" stroke="#cbd5e1" stroke-width="1" opacity="0.65"/>
+  <text x="93" y="379.0" text-anchor="end" font-family="Arial" font-size="13" fill="#64748b">3.60</text>
+  <line x1="105" y1="276.0" x2="1045" y2="276.0" stroke="#cbd5e1" stroke-width="1" opacity="0.65"/>
+  <text x="93" y="281.0" text-anchor="end" font-family="Arial" font-size="13" fill="#64748b">5.40</text>
+  <line x1="105" y1="178.0" x2="1045" y2="178.0" stroke="#cbd5e1" stroke-width="1" opacity="0.65"/>
+  <text x="93" y="183.0" text-anchor="end" font-family="Arial" font-size="13" fill="#64748b">7.20</text>
+  <line x1="105" y1="80.0" x2="1045" y2="80.0" stroke="#cbd5e1" stroke-width="1" opacity="0.65"/>
+  <text x="93" y="85.0" text-anchor="end" font-family="Arial" font-size="13" fill="#64748b">9.00</text>
+  <line x1="105" y1="80" x2="105" y2="570" stroke="#0f172a" stroke-width="2"/>
+  <line x1="105" y1="570" x2="1045" y2="570" stroke="#0f172a" stroke-width="2"/>
+  <rect x="127.0" y="455.7" width="207.5" height="114.3" rx="6" fill="#2563eb"/>
+  <text x="230.8" y="447.7" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700" fill="#0f172a">2.10</text>
+  <text x="230.8" y="594.0" text-anchor="middle" font-family="Arial" font-size="13" fill="#0f172a">Mean</text>
+  <rect x="356.5" y="468.7" width="207.5" height="101.3" rx="6" fill="#16a34a"/>
+  <text x="460.2" y="460.7" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700" fill="#0f172a">1.86</text>
+  <text x="460.2" y="594.0" text-anchor="middle" font-family="Arial" font-size="13" fill="#0f172a">P50</text>
+  <rect x="586.0" y="434.4" width="207.5" height="135.6" rx="6" fill="#f97316"/>
+  <text x="689.8" y="426.4" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700" fill="#0f172a">2.49</text>
+  <text x="689.8" y="594.0" text-anchor="middle" font-family="Arial" font-size="13" fill="#0f172a">P95</text>
+  <rect x="815.5" y="143.2" width="207.5" height="426.8" rx="6" fill="#dc2626"/>
+  <text x="919.2" y="135.2" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700" fill="#0f172a">7.84</text>
+  <text x="919.2" y="594.0" text-anchor="middle" font-family="Arial" font-size="13" fill="#0f172a">Max</text>
+  <text x="28" y="325.0" transform="rotate(-90 28 325.0)" text-anchor="middle" font-family="Arial" font-size="15" fill="#0f172a">Latency (ms)</text>
+  <text x="550.0" y="656" text-anchor="middle" font-family="Arial" font-size="14" fill="#64748b">Local benchmark over 50 requests; production testing should be repeated under real load.</text>
+</svg>
