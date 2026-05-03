@@ -9,10 +9,7 @@ from pathlib import Path
 
 import pandas as pd
 from heart_disease_rt.data import LABEL_COLUMN, FEATURE_COLUMNS, preprocess_dataframe
-from heart_disease_rt.explainability.importance import (
-    compute_feature_importance,
-    compute_local_explanations,
-)
+from heart_disease_rt.explainability.importance import compute_feature_importance, compute_local_explanations
 from heart_disease_rt.models import run_adaptive_comparison, run_baseline_training
 from heart_disease_rt.monitoring import build_confusion_summary
 
@@ -111,10 +108,24 @@ def main() -> None:
     )
 
     x_eval = frame[FEATURE_COLUMNS].copy()
-    importance_df = compute_feature_importance(baseline_model, x_eval)
-    importance_df.to_csv(args.output_dir / "feature_importance.csv", index=False)
-    local_df = compute_local_explanations(baseline_model, x_eval, top_k=3)
-    local_df.to_csv(args.output_dir / "local_explanations.csv", index=False)
+    y_eval = frame[LABEL_COLUMN].copy()
+    try:
+        importance_df = compute_feature_importance(baseline_model, x_eval, y_true=y_eval)
+        importance_df.to_csv(args.output_dir / "feature_importance.csv", index=False)
+    except Exception as exc:
+        (args.output_dir / "feature_importance.csv").write_text(
+            "error\n" + str(exc) + "\n",
+            encoding="utf-8",
+        )
+
+    try:
+        local_df = compute_local_explanations(baseline_model, x_eval, top_k=3)
+        local_df.to_csv(args.output_dir / "local_explanations.csv", index=False)
+    except Exception as exc:
+        (args.output_dir / "local_explanations.csv").write_text(
+            "error\n" + str(exc) + "\n",
+            encoding="utf-8",
+        )
 
     if not adaptive_summary_df.empty:
         adaptive_summary_df.to_csv(args.output_dir / "adaptive_summary.csv", index=False)

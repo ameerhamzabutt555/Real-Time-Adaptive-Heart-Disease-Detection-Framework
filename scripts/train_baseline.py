@@ -40,6 +40,17 @@ def parse_args() -> argparse.Namespace:
         help="Probability threshold for positive-class decision.",
     )
     parser.add_argument(
+        "--model",
+        choices=["logreg", "hgb"],
+        default="logreg",
+        help="Baseline model family to train (logreg=logistic regression, hgb=hist gradient boosting).",
+    )
+    parser.add_argument(
+        "--tune-threshold",
+        action="store_true",
+        help="Tune decision threshold on a validation split (leakage-safe).",
+    )
+    parser.add_argument(
         "--config-output",
         type=Path,
         default=Path("configs/model_config.json"),
@@ -58,6 +69,8 @@ def main() -> None:
         artifact_path=args.artifact,
         test_size=0.2,
         random_state=42,
+        model_type=args.model,
+        tune_threshold=bool(args.tune_threshold),
     )
     metrics = artifact.metrics
     args.metrics_output.parent.mkdir(parents=True, exist_ok=True)
@@ -65,8 +78,8 @@ def main() -> None:
     save_model_config(
         output_path=args.config_output,
         artifact_path=args.artifact,
-        probability_threshold=float(args.threshold),
-        model_version="baseline-v1",
+        probability_threshold=float(metrics.get("selected_threshold", args.threshold)),
+        model_version=f"baseline-{args.model}",
     )
     print(f"Baseline metrics saved to {args.metrics_output}")
     print(f"Serving config saved to {args.config_output}")

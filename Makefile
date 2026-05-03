@@ -39,6 +39,9 @@ run-pipeline:
 train-baseline:
 	PYTHONPATH=src $(PYTHON) scripts/train_baseline.py --input $(DATA) --artifact $(ARTIFACT) --metrics-output $(BASELINE_METRICS) --threshold $(THRESHOLD)
 
+train-baseline-hgb:
+	PYTHONPATH=src $(PYTHON) scripts/train_baseline.py --input $(DATA) --artifact $(ARTIFACT) --metrics-output $(BASELINE_METRICS) --model hgb --tune-threshold
+
 run-adaptive:
 	PYTHONPATH=src $(PYTHON) scripts/run_adaptive_loop.py --input $(DATA) --output-summary $(ADAPTIVE_METRICS)
 

@@ -6,7 +6,7 @@ from collections.abc import Iterable
 from pathlib import Path
 
 import pandas as pd
-from river import compose, drift, linear_model, metrics, preprocessing
+from river import compose, drift, forest, linear_model, metrics, preprocessing
 
 from heart_disease_rt.data.schema import FEATURE_COLUMNS, LABEL_COLUMN
 from heart_disease_rt.monitoring.reporting import save_adaptive_report_plots, summarize_comparison
@@ -35,12 +35,23 @@ def _build_detector(detector_name: str):
 def run_adaptive_training(
     df: pd.DataFrame,
     detector_name: str = "adwin",
+    model_type: str = "logreg",
 ) -> tuple[dict[str, float | int | str], pd.DataFrame]:
     """Run prequential online training with selected drift detector."""
-    model = compose.Pipeline(
-        preprocessing.StandardScaler(),
-        linear_model.LogisticRegression(),
-    )
+    normalized_model = model_type.strip().lower()
+    if normalized_model in {"logreg", "logistic_regression"}:
+        model = compose.Pipeline(
+            preprocessing.StandardScaler(),
+            linear_model.LogisticRegression(),
+        )
+    elif normalized_model in {"arf", "adaptive_random_forest"}:
+        # Stronger online ensemble for tabular streams.
+        model = forest.ARFClassifier(
+            n_models=15,
+            seed=42,
+        )
+    else:
+        raise ValueError("Unsupported model_type. Use 'logreg' or 'arf'.")
     metric_acc = metrics.Accuracy()
     metric_f1 = metrics.F1()
     drift_detector = _build_detector(detector_name)
@@ -76,6 +87,7 @@ def run_adaptive_training(
 
     summary: dict[str, float | int | str] = {
         "detector": detector_name,
+        "model_type": normalized_model,
         "steps": len(progress_rows),
         "accuracy": float(metric_acc.get()),
         "f1": float(metric_f1.get()),
@@ -96,6 +108,7 @@ def run_adaptive_experiment(
 def compare_drift_detectors(
     frame: pd.DataFrame,
     detectors: list[str] | tuple[str, ...] | None = None,
+    model_type: str = "logreg",
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Compatibility helper returning summary and combined progress DataFrame."""
     selected = list(detectors) if detectors is not None else list(SUPPORTED_DETECTORS)
@@ -103,7 +116,7 @@ def compare_drift_detectors(
     all_progress: list[pd.DataFrame] = []
 
     for detector_name in selected:
-        summary, progress = run_adaptive_training(frame, detector_name=detector_name)
+        summary, progress = run_adaptive_training(frame, detector_name=detector_name, model_type=model_type)
         summaries.append(
             {
                 "detector": summary["detector"],
@@ -125,6 +138,7 @@ def run_adaptive_comparison(
     detector_names: list[str] | None = None,
     output_progress_csv: Path | None = None,
     report_dir: Path | None = None,
+    model_type: str = "logreg",
 ) -> dict[str, object]:
     """Run detector comparison and optionally persist progress/plot artifacts."""
     selected = detector_names or list(SUPPORTED_DETECTORS)
@@ -132,7 +146,7 @@ def run_adaptive_comparison(
     all_progress: list[pd.DataFrame] = []
 
     for detector_name in selected:
-        summary, progress = run_adaptive_training(frame, detector_name=detector_name)
+        summary, progress = run_adaptive_training(frame, detector_name=detector_name, model_type=model_type)
         summaries.append(
             {
                 "detector": summary["detector"],

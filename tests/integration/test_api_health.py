@@ -85,3 +85,24 @@ def test_adaptive_predict_and_learn_cycle() -> None:
     status_after = client.get("/adaptive/status")
     assert status_after.status_code == 200
     assert status_after.json()["seen_samples"] == seen_before + 1
+    ft = status_after.json()["feature_streams"]
+    assert set(ft.keys()) == {
+        "age",
+        "sex",
+        "chest_pain_type",
+        "resting_bp",
+        "cholesterol",
+        "fasting_blood_sugar",
+        "restecg",
+        "max_heart_rate",
+        "exercise_angina",
+        "oldpeak",
+        "slope",
+        "ca",
+        "thal",
+    }
+    assert ft["resting_bp"]["n"] >= 2
+
+    ft_ep = client.get("/adaptive/feature-tracking")
+    assert ft_ep.status_code == 200
+    assert "streams" in ft_ep.json()

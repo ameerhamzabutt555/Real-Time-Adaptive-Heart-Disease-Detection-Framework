@@ -26,38 +26,37 @@ Table 4.1 summarizes the primary comparison between static baseline and the best
 
 | Model | Accuracy | Precision | Recall | F1 | ROC-AUC | Drift Events |
 |---|---:|---:|---:|---:|---:|---:|
-| Baseline (Static Logistic Regression) | 0.6154 | 0.6250 | 0.7143 | 0.6667 | 0.7619 | 0 |
-| Adaptive (Best Detector: ADWIN) | 0.6393 | N/A | N/A | 0.6944 | N/A | 0 |
+| Baseline (Static Logistic Regression) | 0.8689 | 0.8125 | 0.9286 | 0.8667 | 0.9502 | 0 |
+| Adaptive (Best Detector: ADWIN) | 0.8185 | N/A | N/A | 0.7955 | N/A | 0 |
 
 **Interpretation:**  
-The adaptive model improved final accuracy from **0.6154** to **0.6393** and improved F1 from **0.6667** to **0.6944**. This supports the claim that online adaptation can maintain stronger predictive behavior than a static model.
+On the UCI 303-record run, the **static baseline** achieved higher holdout accuracy (**0.8689**) than the adaptive online model (**0.8185**). This indicates that, when the evaluation distribution is stable and closely matches training conditions, a well-trained static classifier can outperform an online learner that is optimized for continual updates.  
+
+However, the adaptive result remains strong given that it operates **in-memory**, learns **incrementally**, and is designed for non-stationary settings. Drift detection events were **0** for this run, suggesting no strong drift signal (under the current detector settings and stream order).
 
 ---
 
-## 4.2A Repeated Cross-Validation Benchmark (Why not 90%+ here?)
+## 4.2A Repeated Cross-Validation Benchmark (Fairer estimate on 303 records)
 
-Because single-split metrics can be unstable on small datasets, repeated stratified cross-validation was executed for a fairer estimate.
+Because single-split metrics can be sensitive to the specific holdout split, repeated stratified cross-validation was executed for a fairer estimate (5 folds × 20 repeats; 100 total folds per model).
 
-### Table 4.1A: Repeated CV Summary (5-fold x 20 repeats)
+### Table 4.1A: Repeated CV Summary (5-fold × 20 repeats)
 
 | Model | Folds | Mean Accuracy | Accuracy Std | Mean Precision | Mean Recall | Mean F1 | Mean ROC-AUC |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| Logistic Regression | 100 | 0.7413 | 0.1284 | 0.7566 | 0.7540 | 0.7436 | 0.7927 |
-| Random Forest | 100 | 0.7027 | 0.1138 | 0.7019 | 0.7676 | 0.7217 | 0.7893 |
+| Logistic Regression | 100 | 0.8313 | 0.0456 | 0.8267 | 0.8058 | 0.8139 | 0.9014 |
+| Random Forest | 100 | 0.8254 | 0.0457 | 0.8401 | 0.7721 | 0.8015 | 0.9019 |
 
 **Interpretation:**  
-The repeated-CV estimate is significantly higher than the single-split baseline (0.6154), with logistic regression averaging **0.7413**.  
-This shows that the earlier lower value was partly split-sensitive.
+The repeated-CV estimate for logistic regression is **0.8313 ± 0.0456**, indicating stable performance on the UCI (303) dataset. The CV means are slightly lower than the best single holdout result (0.8689), which is expected: repeated-CV averages across many different splits rather than reporting a single potentially favorable split.
 
-### Why literature often reports 90%+ while this thesis reports lower values
+### Why literature often reports 90%+ while results can differ
 
-1. **Dataset size effect:** Current run uses only 61 samples, which increases variance and limits stable high accuracy.
-2. **Leakage-safe workflow:** This pipeline keeps preprocessing and evaluation separation stricter than many optimistic reported setups.
-3. **Reporting style:** This thesis reports reproducible averages, not only best-case runs.
-4. **Metric emphasis:** Clinical reliability (FN/FNR) is prioritized, not accuracy alone.
-5. **Data source differences:** Many papers use larger/combined or differently cleaned variants of UCI-derived heart datasets.
-
----
+Differences against literature are commonly due to:
+1. **Split protocol differences:** single split vs repeated CV, and different stratification choices.
+2. **Dataset curation differences:** removed rows, imputation rules, label mapping, and feature engineering vary across studies.
+3. **Possible data leakage in some studies:** particularly when preprocessing is fit on the full dataset before evaluation.
+4. **Reporting only best runs:** some papers report peak accuracy rather than mean ± std across multiple runs.
 
 ## 4.3 Detector-Level Adaptive Comparison
 
@@ -67,12 +66,12 @@ Detector comparison results are shown in Table 4.2.
 
 | Detector | Steps | Accuracy | F1 | Drift Events |
 |---|---:|---:|---:|---:|
-| ADWIN | 61 | 0.6393 | 0.6944 | 0 |
-| DDM | 61 | 0.6393 | 0.6944 | 1 |
-| Page-Hinkley | 61 | 0.6393 | 0.6944 | 0 |
+| ADWIN | 303 | 0.8185 | 0.7955 | 0 |
+| DDM | 303 | 0.8185 | 0.7955 | 0 |
+| Page-Hinkley | 303 | 0.8185 | 0.7955 | 0 |
 
 **Interpretation:**  
-All three detectors achieved the same final accuracy and F1 on the current processed dataset run. DDM reported one drift event while ADWIN and Page-Hinkley did not. In this run, **ADWIN is selected as best detector** due to top-ranked performance with no extra drift alarms.
+All three detectors achieved the same final accuracy and F1 on the current UCI run. None of the detectors reported drift events in this configuration. In such cases, detector selection can be based on operational preferences (e.g., conservativeness vs sensitivity) because predictive performance is identical for this run.
 
 ---
 
@@ -108,11 +107,11 @@ The scenario benchmark currently shows stable performance but no positive detect
 Clinical reliability was evaluated using false-negative behavior.
 
 - False Negatives (FN): **2**
-- True Positives (TP): **5**
-- False Negative Rate (FNR): **0.2857**
+- True Positives (TP): **26**
+- False Negative Rate (FNR): **0.0714**
 
 **Interpretation:**  
-An FNR of 28.57% indicates that some positive cases remain missed. For clinical deployment, this motivates either:
+An FNR of **7.14%** indicates that relatively few positive cases were missed in this evaluation. For clinical deployment, it is still important to control missed-risk cases, which motivates either:
 - threshold adjustment toward higher recall,
 - or cost-sensitive optimization in future versions.
 
@@ -125,43 +124,18 @@ This analysis directly addresses the thesis requirement for medically meaningful
 The current statistical output reports:
 
 - Metric: `accuracy_difference(adaptive-baseline)`
-- Mean Difference: **+0.02396**
-- 95% CI: `[+0.02396, +0.02396]` (point-estimate style in this run)
+- Mean Difference: **-0.05037**
+- 95% CI: `[-0.05037, -0.05037]` (point-estimate style in this run)
 
 **Interpretation:**  
-Adaptive outperforms static baseline in this experiment by approximately **2.4 percentage points** in accuracy.  
+On this run, adaptive underperforms the static baseline by approximately **5.0 percentage points** in accuracy.  
 For stronger inferential claims, repeated-seed or repeated-split experiments can be added in future work.
 
 ---
 
-## 4.7 Repeated Cross-Validation Benchmark (Fair Literature Comparison)
+## 4.7 Repeated Cross-Validation Benchmark (Summary)
 
-To reduce single-split variance and compare more fairly with published studies, repeated stratified
-cross-validation was executed (5 folds, 20 repeats; total 100 folds per model).
-
-### Table 4.4: Repeated CV Results
-
-| Model | Folds | Accuracy Mean | Accuracy Std | Precision Mean | Recall Mean | F1 Mean | ROC-AUC Mean |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| Logistic Regression | 100 | 0.8313 | 0.0456 | 0.8267 | 0.8058 | 0.8139 | 0.9014 |
-| Random Forest | 100 | 0.8254 | 0.0457 | 0.8401 | 0.7721 | 0.8015 | 0.9019 |
-
-**Interpretation:**  
-The repeated-CV protocol produces more stable and higher estimates than one holdout split.
-This confirms that the framework performs strongly on the 303-record UCI-style dataset while
-avoiding over-optimistic single-run reporting.
-
-### Why papers report 90%+ and why results can differ
-
-Differences against literature are commonly due to:
-- split protocol differences (single split vs repeated CV),
-- dataset curation/filtering differences,
-- possible data leakage in some studies,
-- reporting only best runs.
-
-Therefore, this thesis reports both:
-1. single-pipeline holdout metrics (deployment-style),
-2. repeated-CV mean ± std (research comparison style).
+Repeated CV results are presented in Table 4.1A and used as the primary research-style estimate (mean ± std), while Table 4.1 serves as the deployment-style holdout comparison.
 
 ---
 
@@ -169,11 +143,11 @@ Therefore, this thesis reports both:
 
 ### 4.7.1 Global Importance (Top features)
 From coefficient-based explainability, most influential features include:
-- chest_pain_type,
 - ca,
-- resting_bp,
-- max_heart_rate,
-- thal.
+- thal,
+- sex,
+- chest_pain_type,
+- exercise_angina.
 
 This aligns with clinically relevant cardiovascular risk dimensions and supports interpretability goals.
 
@@ -187,14 +161,14 @@ Patient-level explanations show top contributing features and sign of contributi
 Latency report from local benchmarking:
 
 - Requests: **50**
-- Mean latency: **13.76 ms**
-- P50 latency: **3.19 ms**
-- P95 latency: **4.07 ms**
-- Min latency: **2.38 ms**
-- Max latency: **532.36 ms** (single outlier)
+- Mean latency: **2.10 ms**
+- P50 latency: **1.86 ms**
+- P95 latency: **2.49 ms**
+- Min latency: **1.73 ms**
+- Max latency: **7.84 ms**
 
 **Interpretation:**  
-Typical response latency (P50/P95) is low and suitable for real-time use in prototype settings. A high outlier indicates occasional startup or runtime overhead; this should be controlled in production benchmarking with warm-up and repeated runs.
+Typical response latency (P50/P95) is low and suitable for real-time use in prototype settings. These results were collected on a local machine and should be re-measured under production-like conditions (warm-up, steady-state load, and representative hardware/network).
 
 ---
 
@@ -218,11 +192,49 @@ So yes, the workflow is aligned with UCI-style heart disease data structure.
 
 ---
 
-## 4.11 Chapter Conclusion
+## 4.11 Extended Results on a Larger UCI-Format Dataset (1025 records)
+
+In addition to the 303-record Cleveland subset, an extended UCI-format heart dataset (`data/raw/heart.csv`, 1025 rows) was evaluated using the same preprocessing and evaluation workflow.
+
+### Table 4.5: Baseline vs Adaptive (1025-record dataset)
+
+| Model | Accuracy | Precision | Recall | F1 | ROC-AUC | Drift Events |
+|---|---:|---:|---:|---:|---:|---:|
+| Baseline (Static Logistic Regression) | 0.8732 | 0.8264 | 0.9524 | 0.8850 | 0.9466 | 0 |
+| Adaptive (Online Logistic Regression + scaler) | 0.8263 | N/A | N/A | 0.8405 | N/A | 0 |
+| Adaptive (Online Adaptive Random Forest) | 0.8673 | N/A | N/A | 0.8707 | N/A | 0 |
+| Baseline (HistGradientBoosting, tuned threshold) | 0.9805 | 0.9633 | 1.0000 | 0.9813 | 0.9973 | 0 |
+
+**Interpretation:**  
+On the larger dataset, the baseline logistic regression retains a performance advantage over the simplest adaptive learner (accuracy **0.8732** vs **0.8263**). This gap is expected because the adaptive model is evaluated in a strict prequential manner and begins with limited prior information.  
+
+After upgrading the adaptive learner to an online **Adaptive Random Forest** ensemble, the adaptive accuracy improves to **0.8673**, substantially narrowing the gap to the static baseline while retaining the ability to update continuously over time.
+
+The boosted static baseline (HistGradientBoosting) reaches **0.9805** accuracy on this particular holdout split. This highlights an important methodological point: powerful batch learners can achieve very high holdout accuracy when the data distribution is stable and the model can be trained offline on a large labeled dataset. However, this is not the same as a streaming adaptive guarantee—online models prioritize continual updates, robustness to drift, and fast incremental learning.
+
+### Clinical error behavior (1025-record dataset)
+
+- False Negatives (FN): **5**
+- True Positives (TP): **100**
+- False Negative Rate (FNR): **0.0476**
+
+**Interpretation:**  
+The false negative rate of **4.76%** indicates fewer missed positive cases, which is desirable for clinical safety. This improvement is expected when evaluation is performed on a larger sample that provides a more stable estimate.
+
+### Statistical difference summary (1025-record dataset)
+
+- Metric: `accuracy_difference(adaptive-baseline)`
+- Mean Difference: **-0.04683**
+
+This indicates the adaptive model is approximately **4.68 percentage points** below the baseline accuracy on this dataset under the current streaming and detector configuration.
+
+---
+
+## 4.12 Chapter Conclusion
 
 The implemented framework demonstrates that:
 
-1. Adaptive learning improves over static baseline in final accuracy/F1.
+1. The baseline static model achieves strong performance on the UCI dataset, while the adaptive online model remains competitive and provides a path to continual learning in non-stationary settings.
 2. End-to-end tooling for drift analysis, explainability, and monitoring is operational.
 3. Real-time inference is feasible at low typical latency in local conditions.
 

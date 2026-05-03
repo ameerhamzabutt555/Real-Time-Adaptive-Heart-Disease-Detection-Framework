@@ -17,6 +17,12 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run online adaptive learning experiment.")
     parser.add_argument("--input", type=Path, required=True, help="Path to raw CSV dataset.")
     parser.add_argument(
+        "--model",
+        choices=["logreg", "arf"],
+        default="logreg",
+        help="Online model type (logreg or arf=Adaptive Random Forest).",
+    )
+    parser.add_argument(
         "--detectors",
         type=str,
         default="adwin,ddm,page_hinkley",
@@ -52,6 +58,7 @@ def main() -> None:
     result = run_adaptive_comparison(
         processed,
         detector_names=detectors,
+        model_type=args.model,
     )
     summary_df = result["summary_df"]
     progress_df = result["progress_df"]

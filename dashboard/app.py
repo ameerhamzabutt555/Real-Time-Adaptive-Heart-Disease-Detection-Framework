@@ -22,6 +22,53 @@ def load_json(path: Path) -> dict:
         return {}
     return json.loads(path.read_text(encoding="utf-8"))
 
+def list_metric_runs() -> dict[str, dict[str, Path]]:
+    """Discover available offline metric files for selection in the dashboard."""
+    runs: dict[str, dict[str, Path]] = {}
+
+    # Default UCI-303 run (existing behavior)
+    runs["UCI-303 (default tracking)"] = {
+        "baseline": BASELINE_JSON,
+        "adaptive": ADAPTIVE_JSON,
+    }
+
+    # Heart 1025 evaluation export folder (contains baseline_vs_adaptive.csv etc.)
+    heart1025_dir = TRACKING_DIR / "heart1025"
+    if heart1025_dir.exists():
+        # Use baseline_vs_adaptive.csv if present; otherwise fallback to standalone metrics files.
+        runs["heart.csv (1025) - evaluation export"] = {
+            "baseline_vs_adaptive": heart1025_dir / "baseline_vs_adaptive.csv",
+            "false_negative": heart1025_dir / "false_negative_analysis.json",
+            "stat": heart1025_dir / "statistical_comparison.json",
+        }
+
+    # Standalone metrics produced by manual training for heart.csv (1025)
+    logreg_1025 = TRACKING_DIR / "baseline_metrics_heart1025_logreg.json"
+    hgb_1025 = TRACKING_DIR / "baseline_metrics_heart1025_hgb.json"
+    adaptive_1025 = TRACKING_DIR / "adaptive_metrics_heart1025.json"
+    adaptive_1025_arf = TRACKING_DIR / "adaptive_metrics_heart1025_arf.json"
+    if logreg_1025.exists() and adaptive_1025.exists():
+        runs["heart.csv (1025) - baseline logreg + adaptive"] = {
+            "baseline": logreg_1025,
+            "adaptive": adaptive_1025,
+        }
+    if logreg_1025.exists() and adaptive_1025_arf.exists():
+        runs["heart.csv (1025) - baseline logreg + adaptive ARF"] = {
+            "baseline": logreg_1025,
+            "adaptive": adaptive_1025_arf,
+        }
+    if hgb_1025.exists():
+        runs["heart.csv (1025) - baseline HGB only"] = {
+            "baseline": hgb_1025,
+        }
+    if hgb_1025.exists() and adaptive_1025_arf.exists():
+        runs["heart.csv (1025) - baseline HGB + adaptive ARF"] = {
+            "baseline": hgb_1025,
+            "adaptive": adaptive_1025_arf,
+        }
+
+    return runs
+
 def api_get(base_url: str, path: str) -> tuple[int | None, dict | None, str | None]:
     try:
         with httpx.Client(base_url=base_url, timeout=5.0) as client:
@@ -42,8 +89,43 @@ def api_post(base_url: str, path: str, payload: dict) -> tuple[int | None, dict 
         return None, None, str(exc)
 
 
-baseline_metrics = load_json(BASELINE_JSON)
-adaptive_metrics = load_json(ADAPTIVE_JSON)
+def api_post_empty(base_url: str, path: str) -> tuple[int | None, dict | None, str | None]:
+    try:
+        with httpx.Client(base_url=base_url, timeout=10.0) as client:
+            r = client.post(path)
+        data = r.json() if r.headers.get("content-type", "").startswith("application/json") else None
+        return r.status_code, data, None
+    except Exception as exc:
+        return None, None, str(exc)
+
+
+def feature_streams_to_dataframe(streams: dict) -> pd.DataFrame:
+    if not streams:
+        return pd.DataFrame(columns=["feature", "n", "mean", "variance", "last"])
+    rows = []
+    for feat in sorted(streams.keys()):
+        stats = streams[feat]
+        if not isinstance(stats, dict):
+            continue
+        rows.append(
+            {
+                "feature": feat,
+                "n": stats.get("n", 0),
+                "mean": stats.get("mean", 0.0),
+                "variance": stats.get("variance", 0.0),
+                "last": stats.get("last", 0.0),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+runs = list_metric_runs()
+selected_run = st.sidebar.selectbox("Offline metrics run", list(runs.keys()), index=0)
+run_files = runs[selected_run]
+
+baseline_metrics = load_json(run_files.get("baseline", BASELINE_JSON))
+adaptive_path = run_files.get("adaptive")
+adaptive_metrics = load_json(adaptive_path) if adaptive_path is not None else {}
 adaptive_summary = adaptive_metrics.get("summary", {})
 detector_summary = adaptive_summary.get("detectors", {})
 best_detector = adaptive_summary.get("best_detector")
@@ -53,12 +135,17 @@ tabs = st.tabs(["Experiments (offline metrics)", "Real-time API (baseline + adap
 with tabs[0]:
     top_left, top_mid, top_right = st.columns(3)
     top_left.metric("Baseline Accuracy", f"{baseline_metrics.get('accuracy', 0):.4f}")
-    if best_detector and best_detector in detector_summary:
+    if adaptive_path is None:
+        top_mid.metric("Adaptive Accuracy (best)", "N/A")
+        top_right.metric("Drift Events (best)", "N/A")
+    elif best_detector and best_detector in detector_summary:
         top_mid.metric("Adaptive Accuracy (best)", f"{detector_summary[best_detector].get('accuracy', 0):.4f}")
         top_right.metric("Drift Events (best)", detector_summary[best_detector].get("drift_events", 0))
     else:
         top_mid.metric("Adaptive Accuracy (best)", "0.0000")
         top_right.metric("Drift Events (best)", 0)
+
+    st.caption(f"Showing offline metrics from: {selected_run}")
 
     if detector_summary:
         st.subheader("Detector Comparison Summary")
@@ -107,7 +194,7 @@ with tabs[1]:
     default_api_url = os.getenv("HEART_API_URL", "http://localhost:8000")
     api_url = st.text_input("API base URL", value=default_api_url, help="Example: http://localhost:8001")
 
-    col_a, col_b, col_c = st.columns(3)
+    col_a, col_b, col_c, col_d, col_e, col_f = st.columns(6)
     if col_a.button("Check /health"):
         code, data, err = api_get(api_url, "/health")
         if err:
@@ -122,12 +209,85 @@ with tabs[1]:
         else:
             st.write({"status_code": code, "data": data})
 
-    if col_c.button("Get /adaptive/status"):
+    if col_c.button("Adaptive status"):
         code, data, err = api_get(api_url, "/adaptive/status")
         if err:
             st.error(err)
+        elif isinstance(data, dict):
+            st.session_state["adaptive_status"] = data
+            st.success(f"status {code}")
         else:
-            st.write({"status_code": code, "data": data})
+            st.warning(str(data))
+
+    if col_d.button("Feature streams"):
+        code, data, err = api_get(api_url, "/adaptive/feature-tracking")
+        if err:
+            st.error(err)
+        elif isinstance(data, dict) and "streams" in data:
+            st.session_state["feature_streams"] = data["streams"]
+            st.success(f"feature-tracking {code}")
+        else:
+            st.warning(str(data))
+
+    if col_e.button("List checkpoints"):
+        code, data, err = api_get(api_url, "/adaptive/checkpoints")
+        if err:
+            st.error(err)
+        elif isinstance(data, list):
+            st.session_state["checkpoints_list"] = data
+            st.success(f"checkpoints {code} ({len(data)} files)")
+        else:
+            st.warning(str(data))
+
+    if col_f.button("Flush learn queue"):
+        code, data, err = api_post_empty(api_url, "/adaptive/learn/flush")
+        if err:
+            st.error(err)
+        else:
+            st.write({"endpoint": "/adaptive/learn/flush", "status_code": code, "data": data})
+
+    st.subheader("Adaptive live state")
+    status_data = st.session_state.get("adaptive_status")
+    if isinstance(status_data, dict):
+        m1, m2, m3, m4, m5, m6 = st.columns(6)
+        m1.metric("Seen (learn)", status_data.get("seen_samples", 0))
+        m2.metric("Learn pending", status_data.get("learn_pending", 0))
+        m3.metric("Batch size", status_data.get("commit_batch_size", 1))
+        m4.metric("Drift events", status_data.get("drift_events", 0))
+        m5.metric("Online Acc", f"{float(status_data.get('online_accuracy', 0)):.4f}")
+        m6.metric("Online F1", f"{float(status_data.get('online_f1', 0)):.4f}")
+        st.caption(
+            f"Detector: {status_data.get('detector')} | model: {status_data.get('model_type')} | "
+            f"checkpoint_dir: {status_data.get('checkpoint_dir') or '—'}"
+        )
+        streams_inline = status_data.get("feature_streams")
+        if isinstance(streams_inline, dict) and streams_inline:
+            st.session_state["feature_streams"] = streams_inline
+    else:
+        st.info("Click **Adaptive status** to load batch settings, counters, and feature snapshot.")
+
+    streams = st.session_state.get("feature_streams")
+    if isinstance(streams, dict) and streams:
+        st.subheader("Per-feature stream tracking (all inputs)")
+        st.caption("Running n / mean / variance / last value for every canonical feature after API traffic.")
+        st.dataframe(feature_streams_to_dataframe(streams), use_container_width=True)
+    else:
+        st.caption("Load **Feature streams** or **Adaptive status** to populate the table.")
+
+    ck_list = st.session_state.get("checkpoints_list")
+    if isinstance(ck_list, list) and ck_list:
+        st.subheader("Rollback checkpoint")
+        names = [c.get("filename", "") for c in ck_list if isinstance(c, dict) and c.get("filename")]
+        if names:
+            pick = st.selectbox("checkpoint file", options=names, key="ck_pick")
+            if st.button("Restore selected checkpoint", key="ck_restore"):
+                code, data, err = api_post(api_url, "/adaptive/checkpoint/restore", {"filename": pick})
+                if err:
+                    st.error(err)
+                else:
+                    st.write({"endpoint": "/adaptive/checkpoint/restore", "status_code": code, "data": data})
+                    st.session_state.pop("adaptive_status", None)
+                    st.session_state.pop("feature_streams", None)
 
     st.divider()
     st.subheader("Try a prediction (Baseline vs Adaptive)")
@@ -182,9 +342,18 @@ with tabs[1]:
         else:
             st.write({"endpoint": "/adaptive/predict", "status_code": a_code, "data": a_data})
 
+        _, ft_data, ft_err = api_get(api_url, "/adaptive/feature-tracking")
+        if not ft_err and isinstance(ft_data, dict) and "streams" in ft_data:
+            st.session_state["feature_streams"] = ft_data["streams"]
+            st.subheader("Feature streams (after this predict)")
+            st.dataframe(feature_streams_to_dataframe(ft_data["streams"]), use_container_width=True)
+
     st.divider()
     st.subheader("Online learning (Adaptive /adaptive/learn)")
-    st.caption("Send labeled feedback to update the adaptive model in-memory.")
+    st.caption(
+        "Send labeled feedback. If API `ADAPTIVE_COMMIT_BATCH_SIZE` > 1, updates queue until the batch is full; "
+        "use **Flush learn queue** on the API panel above to commit early."
+    )
     with st.form("learn_form"):
         label = st.selectbox("true label", options=[0, 1], index=1)
         threshold_override = st.number_input("threshold override (optional)", min_value=0.0, max_value=1.0, value=0.5)
@@ -201,3 +370,45 @@ with tabs[1]:
             st.error(f"/adaptive/learn error: {l_err}")
         else:
             st.write({"endpoint": "/adaptive/learn", "status_code": l_code, "data": l_data})
+            if isinstance(l_data, dict):
+                st.caption(
+                    f"learn_pending={l_data.get('learn_pending', '—')} | "
+                    f"learn_applied_now={l_data.get('learn_applied_now', '—')}"
+                )
+        _, ft_data, ft_err = api_get(api_url, "/adaptive/feature-tracking")
+        if not ft_err and isinstance(ft_data, dict) and "streams" in ft_data:
+            st.session_state["feature_streams"] = ft_data["streams"]
+            st.subheader("Feature streams (after learn)")
+            st.dataframe(feature_streams_to_dataframe(ft_data["streams"]), use_container_width=True)
+
+    st.divider()
+    st.subheader("Observe (Predict + Auto-learn when label exists) /adaptive/observe")
+    st.caption("Use this when labels arrive later: send predict-only first, then send the same patient again with label to auto-learn.")
+    with st.form("observe_form"):
+        obs_patient_id = st.text_input("patient_id (optional)", value="patient-001")
+        obs_send_label = st.checkbox("Include label (learn)", value=False)
+        obs_label = st.selectbox("label (if included)", options=[0, 1], index=1)
+        obs_submit = st.form_submit_button("Send /adaptive/observe")
+
+    if obs_submit:
+        observe_payload: dict = {"patient": patient_payload}
+        if obs_patient_id.strip():
+            observe_payload["patient_id"] = obs_patient_id.strip()
+        if obs_send_label:
+            observe_payload["label"] = int(obs_label)
+        with st.spinner("Calling /adaptive/observe ..."):
+            o_code, o_data, o_err = api_post(api_url, "/adaptive/observe", observe_payload)
+        if o_err:
+            st.error(f"/adaptive/observe error: {o_err}")
+        else:
+            st.write({"endpoint": "/adaptive/observe", "status_code": o_code, "data": o_data})
+            if isinstance(o_data, dict) and o_data.get("learned"):
+                st.caption(
+                    f"learn_pending={o_data.get('learn_pending', '—')} | "
+                    f"learn_applied_now={o_data.get('learn_applied_now', '—')}"
+                )
+        _, ft_data, ft_err = api_get(api_url, "/adaptive/feature-tracking")
+        if not ft_err and isinstance(ft_data, dict) and "streams" in ft_data:
+            st.session_state["feature_streams"] = ft_data["streams"]
+            st.subheader("Feature streams (after observe)")
+            st.dataframe(feature_streams_to_dataframe(ft_data["streams"]), use_container_width=True)

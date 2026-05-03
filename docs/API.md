@@ -387,4 +387,88 @@ Loaded from `configs/model_config.json` (if present), with environment overrides
 Environment variables:
 - `ADAPTIVE_DETECTOR` (default: `adwin`)
 - `ADAPTIVE_THRESHOLD` (default: `0.5`)
+- `ADAPTIVE_MODEL_TYPE` (optional): adaptive model family for the live API.
+  - `logreg` (default): online scaler + logistic regression
+  - `arf`: online Adaptive Random Forest (stronger online ensemble)
+- `ADAPTIVE_WARM_START_PATH` (optional): CSV path to warm-start the in-memory adaptive model at API startup.
+- `ADAPTIVE_WARM_START_LIMIT` (optional): Limit number of warm-start rows (useful for demos).
+- `ADAPTIVE_ON_DRIFT` (optional): drift action policy.
+  - `log_only` (default): only record drift events.
+  - `reset`: automatically reset the adaptive model + detector when drift is detected, then continue learning on new cases.
+
+---
+
+## Optional: `POST /adaptive/observe` (predict + auto-learn when label exists)
+
+**What it does**
+- Supports real-world behavior where you always want to **predict**, and sometimes you also have a **label/feedback** to update the model.
+- If `label` is omitted → prediction-only (same as `/adaptive/predict`).
+- If `label` is provided → it will update metrics, drift detector, and the online model (similar to `/adaptive/learn`).
+
+**Request body (`AdaptiveObserveRequest`)**
+- **`patient`** *(object)*: `PatientRecord`
+- **`label`** *(integer, optional)*: `0` or `1`
+- **`threshold`** *(number, optional)*: threshold override for decision only (`0..1`)
+- **`patient_id`** *(string, optional)*: any identifier to help track repeated visits
+
+**Response body (`AdaptiveObserveResponse`)**
+Includes the normal prediction fields plus:
+- **`learned`** *(boolean)*: `true` if this request performed learning (label was provided).
+- **`patient_id`** *(string|null)*: echoed back
+- **`seen_samples`** *(integer)*: total online learning samples learned so far
+- **`detector`** *(string)*: drift detector name
+- **`drift_detected`** *(boolean)*: drift flag for this step (only meaningful when `learned=true`)
+- **`drift_events`** *(integer)*: total drift events
+- **`online_accuracy`**, **`online_f1`**: current online metrics
+
+**Curl (predict-only)**
+
+```bash
+curl -s -X POST http://localhost:8000/adaptive/observe \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "patient": {
+      "age": 53,
+      "sex": 1,
+      "resting_bp": 132.0,
+      "cholesterol": 246.0,
+      "max_heart_rate": 151.0,
+      "fasting_blood_sugar": 0,
+      "restecg": 1,
+      "exercise_angina": 1,
+      "chest_pain_type": 2,
+      "oldpeak": 1.3,
+      "slope": 1,
+      "ca": 0,
+      "thal": 2
+    },
+    "patient_id": "patient-001"
+  }'
+```
+
+**Curl (predict + learn)**
+
+```bash
+curl -s -X POST http://localhost:8000/adaptive/observe \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "patient": {
+      "age": 53,
+      "sex": 1,
+      "resting_bp": 132.0,
+      "cholesterol": 246.0,
+      "max_heart_rate": 151.0,
+      "fasting_blood_sugar": 0,
+      "restecg": 1,
+      "exercise_angina": 1,
+      "chest_pain_type": 2,
+      "oldpeak": 1.3,
+      "slope": 1,
+      "ca": 0,
+      "thal": 2
+    },
+    "label": 1,
+    "patient_id": "patient-001"
+  }'
+```
 
