@@ -1,0 +1,63 @@
+from pydantic import BaseModel, Field
+
+
+class PatientRecord(BaseModel):
+    """Validated payload shape for inference endpoints."""
+
+    age: int = Field(ge=1, le=120)
+    sex: int = Field(ge=0, le=1)
+    resting_bp: float = Field(gt=0)
+    cholesterol: float = Field(gt=0)
+    max_heart_rate: float = Field(gt=0)
+    fasting_blood_sugar: int = Field(default=0, ge=0, le=1)
+    restecg: int = Field(default=0, ge=0, le=2)
+    exercise_angina: int = Field(default=0, ge=0, le=1)
+    chest_pain_type: int = Field(default=0, ge=0, le=3)
+    oldpeak: float = Field(default=0.0, ge=0)
+    slope: int = Field(default=1, ge=0, le=2)
+    ca: int = Field(default=0, ge=0, le=4)
+    thal: int = Field(default=2, ge=0, le=3)
+
+
+class PredictionResponse(BaseModel):
+    """Normalized API output for risk predictions."""
+
+    risk_score: float = Field(ge=0.0, le=1.0)
+    predicted_label: int = Field(ge=0, le=1)
+    model_version: str = "baseline-v0"
+    threshold: float = Field(default=0.5, ge=0.0, le=1.0)
+    model_loaded: bool = False
+
+
+class ThresholdUpdateRequest(BaseModel):
+    patient: PatientRecord
+    threshold: float = Field(ge=0.0, le=1.0)
+
+
+class AdaptiveLearnRequest(BaseModel):
+    patient: PatientRecord
+    label: int = Field(ge=0, le=1)
+    threshold: float | None = Field(default=None, ge=0.0, le=1.0)
+
+
+class AdaptiveLearnResponse(PredictionResponse):
+    true_label: int = Field(ge=0, le=1)
+    detector: str
+    drift_detected: bool
+    seen_samples: int = Field(ge=0)
+    online_accuracy: float = Field(ge=0.0, le=1.0)
+    online_f1: float = Field(ge=0.0, le=1.0)
+    drift_events: int = Field(ge=0)
+
+
+class AdaptiveStatusResponse(BaseModel):
+    model_version: str
+    detector: str
+    threshold: float = Field(ge=0.0, le=1.0)
+    seen_samples: int = Field(ge=0)
+    drift_events: int = Field(ge=0)
+    online_accuracy: float = Field(ge=0.0, le=1.0)
+    online_f1: float = Field(ge=0.0, le=1.0)
+
+
+PredictionRequest = PatientRecord

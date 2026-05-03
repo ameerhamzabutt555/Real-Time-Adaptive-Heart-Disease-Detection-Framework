@@ -1,0 +1,28 @@
+{
+  "model_artifact_path": "models/artifacts/baseline.joblib",
+  "probability_threshold": 0.5,
+  "model_version": "baseline-v1",
+  "feature_order": [
+    "age",
+    "sex",
+    "chest_pain_type",
+    "resting_bp",
+    "cholesterol",
+    "fasting_blood_sugar",
+    "restecg",
+    "max_heart_rate",
+    "exercise_angina",
+    "oldpeak",
+    "slope",
+    "ca",
+    "thal"
+  ],
+  "metrics": {
+    "accuracy": 0.8688524590163934,
+    "precision": 0.8125,
+    "recall": 0.9285714285714286,
+    "f1": 0.8666666666666667,
+    "roc_auc": 0.9502164502164503
+  },
+  "trained_at_utc": "2026-04-21T05:09:09.497745+00:00"
+}
