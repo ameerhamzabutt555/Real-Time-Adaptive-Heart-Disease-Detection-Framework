@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1050" height="620" viewBox="0 0 1050 620">
+  <rect width="100%" height="100%" fill="white"/>
+  <text x="525.0" y="34" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#0f172a">Static vs Adaptive Model Trade-off</text>
+
+  <line x1="110" y1="485" x2="890" y2="485" stroke="#0f172a" stroke-width="2"/>
+  <line x1="110" y1="95" x2="110" y2="485" stroke="#0f172a" stroke-width="2"/>
+  <text x="500.0" y="548" text-anchor="middle" font-family="Arial" font-size="16" fill="#0f172a">Continuous learning and adaptability</text>
+  <text x="35" y="290.0" transform="rotate(-90 35 290.0)" text-anchor="middle" font-family="Arial" font-size="16" fill="#0f172a">Prediction performance</text>
+  <circle cx="281.6" cy="110.6" r="13" fill="#16a34a"/>
+  <text x="299.6" y="106.6" font-family="Arial" font-size="14" font-weight="700" fill="#0f172a">HistGradientBoosting</text>
+  <text x="299.6" y="123.6" font-family="Arial" font-size="14" font-weight="700" fill="#0f172a">Static</text>
+  <circle cx="328.4" cy="192.5" r="13" fill="#2563eb"/>
+  <text x="346.4" y="188.5" font-family="Arial" font-size="14" font-weight="700" fill="#0f172a">Logistic Regression</text>
+  <text x="346.4" y="205.5" font-family="Arial" font-size="14" font-weight="700" fill="#0f172a">Static</text>
+  <circle cx="718.4" cy="196.4" r="13" fill="#7c3aed"/>
+  <text x="736.4" y="192.4" font-family="Arial" font-size="14" font-weight="700" fill="#0f172a">Adaptive Random Forest</text>
+  <circle cx="780.8" cy="258.8" r="13" fill="#f97316"/>
+  <text x="798.8" y="254.8" font-family="Arial" font-size="14" font-weight="700" fill="#0f172a">Adaptive Online LR</text>
+  <text x="525.0" y="590" text-anchor="middle" font-family="Arial" font-size="14" fill="#64748b">Static models maximize stable-data accuracy; adaptive models add continuous learning for changing data.</text>
+</svg>

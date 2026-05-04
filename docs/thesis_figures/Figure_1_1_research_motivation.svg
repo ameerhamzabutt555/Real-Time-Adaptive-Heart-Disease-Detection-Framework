@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1300" height="620" viewBox="0 0 1300 620">
+  <rect width="100%" height="100%" fill="white"/>
+  <text x="650.0" y="42" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">Research Motivation for Real-time Adaptive Heart Disease Detection</text>
+  <text x="650.0" y="73" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#64748b">Static diagnosis models can lose reliability when patient data patterns change over time.</text>
+
+  <rect x="57.5" y="165" width="270" height="190" rx="18" fill="#f8fafc" stroke="#2563eb" stroke-width="3"/>
+  <circle cx="92.5" cy="203" r="20" fill="#2563eb"/>
+  <text x="92.5" y="210" text-anchor="middle" font-family="Arial" font-size="18" font-weight="700" fill="white">1</text>
+  <text x="122.5" y="208" font-family="Arial" font-size="17" font-weight="700" fill="#0f172a">Static diagnostic models</text>
+  <text x="85.5" y="260" font-family="Arial" font-size="15" fill="#0f172a">Models trained once may become</text>
+  <text x="85.5" y="282" font-family="Arial" font-size="15" fill="#0f172a">outdated as clinical patterns</text>
+  <text x="85.5" y="304" font-family="Arial" font-size="15" fill="#0f172a">evolve.</text>
+  <line x1="334.5" y1="260.0" x2="355.5" y2="260.0" stroke="#64748b" stroke-width="3"/>
+  <polygon points="355.5,252.0 367.5,260.0 355.5,268.0" fill="#64748b"/>
+  <rect x="362.5" y="165" width="270" height="190" rx="18" fill="#f8fafc" stroke="#f97316" stroke-width="3"/>
+  <circle cx="397.5" cy="203" r="20" fill="#f97316"/>
+  <text x="397.5" y="210" text-anchor="middle" font-family="Arial" font-size="18" font-weight="700" fill="white">2</text>
+  <text x="427.5" y="208" font-family="Arial" font-size="17" font-weight="700" fill="#0f172a">Changing patient trends</text>
+  <text x="390.5" y="260" font-family="Arial" font-size="15" fill="#0f172a">Lifestyle, treatment,</text>
+  <text x="390.5" y="282" font-family="Arial" font-size="15" fill="#0f172a">population and environment can</text>
+  <text x="390.5" y="304" font-family="Arial" font-size="15" fill="#0f172a">shift disease-risk</text>
+  <text x="390.5" y="326" font-family="Arial" font-size="15" fill="#0f172a">relationships.</text>
+  <line x1="639.5" y1="260.0" x2="660.5" y2="260.0" stroke="#64748b" stroke-width="3"/>
+  <polygon points="660.5,252.0 672.5,260.0 660.5,268.0" fill="#64748b"/>
+  <rect x="667.5" y="165" width="270" height="190" rx="18" fill="#f8fafc" stroke="#dc2626" stroke-width="3"/>
+  <circle cx="702.5" cy="203" r="20" fill="#dc2626"/>
+  <text x="702.5" y="210" text-anchor="middle" font-family="Arial" font-size="18" font-weight="700" fill="white">3</text>
+  <text x="732.5" y="208" font-family="Arial" font-size="17" font-weight="700" fill="#0f172a">Clinical error risk</text>
+  <text x="695.5" y="260" font-family="Arial" font-size="15" fill="#0f172a">False negatives may delay</text>
+  <text x="695.5" y="282" font-family="Arial" font-size="15" fill="#0f172a">treatment for high-risk heart</text>
+  <text x="695.5" y="304" font-family="Arial" font-size="15" fill="#0f172a">disease patients.</text>
+  <line x1="944.5" y1="260.0" x2="965.5" y2="260.0" stroke="#64748b" stroke-width="3"/>
+  <polygon points="965.5,252.0 977.5,260.0 965.5,268.0" fill="#64748b"/>
+  <rect x="972.5" y="165" width="270" height="190" rx="18" fill="#f8fafc" stroke="#16a34a" stroke-width="3"/>
+  <circle cx="1007.5" cy="203" r="20" fill="#16a34a"/>
+  <text x="1007.5" y="210" text-anchor="middle" font-family="Arial" font-size="18" font-weight="700" fill="white">4</text>
+  <text x="1037.5" y="208" font-family="Arial" font-size="17" font-weight="700" fill="#0f172a">Adaptive real-time framework</text>
+  <text x="1000.5" y="260" font-family="Arial" font-size="15" fill="#0f172a">Online learning, drift</text>
+  <text x="1000.5" y="282" font-family="Arial" font-size="15" fill="#0f172a">monitoring, FastAPI and</text>
+  <text x="1000.5" y="304" font-family="Arial" font-size="15" fill="#0f172a">dashboard support continuous</text>
+  <text x="1000.5" y="326" font-family="Arial" font-size="15" fill="#0f172a">diagnosis.</text>
+  <rect x="160" y="430" width="980" height="80" rx="15" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="650" y="462" text-anchor="middle" font-family="Arial" font-size="17" font-weight="700" fill="#0f172a">Motivation Summary</text>
+  <text x="650" y="492" text-anchor="middle" font-family="Arial" font-size="15" fill="#0f172a">The thesis addresses the gap between high static accuracy and long-term reliability by adding adaptive learning, drift monitoring, and real-time deployment.</text>
+</svg>
